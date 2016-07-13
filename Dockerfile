@@ -2,7 +2,7 @@
 # Dockerfile to build LLVM 3.8.0 container images
 # Based on Ubuntu
 ############################################################
-FROM ubuntu16.04:LLVM3.8.0
+FROM ubuntu:16.04
 
 MAINTAINER Rui Gu
 
