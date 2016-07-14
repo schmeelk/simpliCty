@@ -6,7 +6,7 @@ FROM ubuntu:16.04
 
 MAINTAINER Rui Gu
 
-RUN apt-get update && apt-get -y install build-essential subversion python2.7-dev libedit-dev libncurses5-dev cmake inotify-tools fdupes libxml2-dev swig wget
+RUN apt-get update && apt-get -y install build-essential subversion swig python2.7-dev libedit-dev libncurses5-dev cmake inotify-tools fdupes libxml2-dev swig wget
 
 RUN mkdir -p ~/Workspace
 
@@ -26,6 +26,6 @@ RUN cd ~/Workspace/llvm-3.8.0.src && mkdir build
 
 RUN cd ~/Workspace/llvm-3.8.0.src/build && cmake -DCMAKE_BUILD_TYPE=Debug ..
 
-RUN cd ~/Workspace/llvm-3.8.0.src/build && make -j2
+RUN cd ~/Workspace/llvm-3.8.0.src/build && make -j8
 
 RUN cd ~/Workspace/llvm-3.8.0.src/build && make install
