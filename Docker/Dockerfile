@@ -28,4 +28,4 @@ RUN cd ~/Workspace/llvm-3.8.0.src/build && cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 RUN cd ~/Workspace/llvm-3.8.0.src/build && make -j8
 
-RUN cd ~/Workspace/llvm-3.8.0.src/build && make install
+RUN cd ~/Workspace/llvm-3.8.0.src/build && make install && make clean
