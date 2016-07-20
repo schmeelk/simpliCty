@@ -7,7 +7,7 @@ FROM ubuntu:16.04
 MAINTAINER Rui Gu
 
 # Build LLVM 3.7.1
-RUN apt-get update && apt-get -y install build-essential subversion swig python2.7-dev libedit-dev libncurses5-dev cmake inotify-tools fdupes libxml2-dev swig wget vim sudo tmux ocaml ocaml-native-compilers ocaml-findlib oasis libpcre-ocaml-dev
+RUN apt-get update && apt-get -y install build-essential subversion swig python2.7-dev libedit-dev libncurses5-dev cmake inotify-tools fdupes libxml2-dev swig wget vim sudo tmux ocaml ocaml-native-compilers ocaml-findlib oasis libpcre-ocaml-dev git opam
 
 RUN mkdir -p ~/Workspace && mkdir -p ~/Downloads
 
