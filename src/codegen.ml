@@ -105,7 +105,7 @@ let translate (globals, functions) =
 	  | A.Geq     -> L.build_icmp L.Icmp.Sge
 	  ) e1' e2' "tmp" builder
       | A.Unop(op, e) ->
-	  let e' = expr builder e in
+          let e' = expr builder e in
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
@@ -116,9 +116,17 @@ let translate (globals, functions) =
           | A.AssnSub     -> expr builder (A.Binop((A.Id s), A.Sub, e))
           | A.AssnMult    -> expr builder (A.Binop((A.Id s), A.Mult, e))
           | A.AssnDiv     -> expr builder (A.Binop((A.Id s), A.Div, e))
-          | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e)))
-          in
+          | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e))
+          ) in
           ignore (L.build_store e' (lookup s) builder); e'
+      | A.Ment(op, s) ->
+          let e' = expr builder (A.Id s)
+          and one = expr builder (A.Literal 1) in
+          let s' = (match op with
+            A.PlusPlus -> L.build_add e' one "tmp" builder
+          | A.MinusMinus -> L.build_sub e' one "tmp" builder
+          ) in
+          ignore (L.build_store s' (lookup s) builder); s'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder

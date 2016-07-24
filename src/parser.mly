@@ -5,7 +5,8 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE MODULO NOT
+%token PLUS MINUS TIMES DIVIDE MODULO
+%token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
@@ -25,6 +26,7 @@ open Ast
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE MODULO
+%right PLUSPLUS MINUSMINUS
 %right NOT NEG
 
 %start program
@@ -107,7 +109,9 @@ expr:
   | expr AND    expr { Binop($1, And,   $3) }
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
-  | NOT expr         { Unop(Not, $2) }
+  | NOT expr             { Unop(Not, $2) }
+  | PLUSPLUS ID          { Ment(PlusPlus, $2) }
+  | MINUSMINUS ID        { Ment(MinusMinus, $2) }
   | ID ASSIGNREG expr   { Assign($1, AssnReg, $3) }
   | ID ASSIGNADD expr   { Assign($1, AssnAdd, $3) }
   | ID ASSIGNSUB expr   { Assign($1, AssnSub, $3) }
