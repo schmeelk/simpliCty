@@ -109,6 +109,11 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
+      (* This is a deummy case to stop errors. This will never be processed. *)
+      | A.Crement(op ,s) -> (match op with _ -> expr builder (A.Id s))
+          (*(match op with
+            A.PlusPlus -> expr builder (A.Assign(s, A.AssnAdd, (A.Literal 1)))
+          | A.MinusMinus -> expr builder (A.Assign(s, A.AssnSub, (A.Literal 1))))*)
       | A.Assign (s, op, e) ->
           let e' = (match op with
             A.AssnReg     -> expr builder e
@@ -119,14 +124,6 @@ let translate (globals, functions) =
           | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e))
           ) in
           ignore (L.build_store e' (lookup s) builder); e'
-      | A.Ment(op, s) ->
-          let e' = expr builder (A.Id s)
-          and one = expr builder (A.Literal 1) in
-          let s' = (match op with
-            A.PlusPlus -> L.build_add e' one "tmp" builder
-          | A.MinusMinus -> L.build_sub e' one "tmp" builder
-          ) in
-          ignore (L.build_store s' (lookup s) builder); s'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder

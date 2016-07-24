@@ -110,8 +110,8 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr             { Unop(Not, $2) }
-  | PLUSPLUS ID          { Ment(PlusPlus, $2) }
-  | MINUSMINUS ID        { Ment(MinusMinus, $2) }
+  | PLUSPLUS ID          { Assign($2, AssnAdd, Literal(1)) }
+  | MINUSMINUS ID        { Assign($2, AssnSub, Literal(1)) }
   | ID ASSIGNREG expr   { Assign($1, AssnReg, $3) }
   | ID ASSIGNADD expr   { Assign($1, AssnAdd, $3) }
   | ID ASSIGNSUB expr   { Assign($1, AssnSub, $3) }

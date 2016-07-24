@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 
 type uop = Neg | Not
 
-type ment = PlusPlus | MinusMinus
+type crement = PlusPlus | MinusMinus
 
 type typ = Int | Bool | Void
 
@@ -19,7 +19,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Ment of ment * string
+  | Crement of crement * string
   | Assign of string * assn * expr
   | Call of string * expr list
   | Noexpr
@@ -64,7 +64,7 @@ let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
 
-let string_of_ment = function
+let string_of_crement = function
     PlusPlus -> "++"
   | MinusMinus -> "--"
 
@@ -84,7 +84,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Ment(o, s) -> string_of_ment o ^ " " ^ s
+  | Crement (o, s) -> string_of_crement o ^ " " ^ s
   | Assign(v, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
