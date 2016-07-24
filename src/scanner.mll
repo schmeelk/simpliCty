@@ -15,8 +15,13 @@ rule token = parse
 | '-'      { MINUS }
 | '*'      { TIMES }
 | '/'      { DIVIDE }
-| "%"      { MODULO }
-| '='      { ASSIGN }
+| '%'      { MODULO }
+| '='      { ASSIGNREG }
+| "+="     { ASSIGNADD }
+| "-="     { ASSIGNSUB }
+| "*="     { ASSIGNMULT }
+| "/="     { ASSIGNDIV }
+| "%="     { ASSIGNMOD }
 | "=="     { EQ }
 | "!="     { NEQ }
 | '<'      { LT }

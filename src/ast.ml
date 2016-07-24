@@ -7,6 +7,8 @@ type uop = Neg | Not
 
 type typ = Int | Bool | Void
 
+type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
+
 type bind = typ * string
 
 type expr =
@@ -15,7 +17,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Assign of string * expr
+  | Assign of string * assn * expr
   | Call of string * expr list
   | Noexpr
 
@@ -59,6 +61,14 @@ let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
 
+let string_of_assn = function
+    AssnReg -> "="
+  | AssnAdd -> "+="
+  | AssnSub -> "-="
+  | AssnMult -> "*="
+  | AssnDiv -> "/="
+  | AssnMod -> "%="
+
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
@@ -67,7 +77,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Assign(v, e) -> v ^ " = " ^ string_of_expr e
+  | Assign(v, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""

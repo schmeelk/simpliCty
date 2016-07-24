@@ -6,7 +6,7 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE MODULO NOT
-%token ASSIGN
+%token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
 %token PRINT
@@ -17,7 +17,8 @@ open Ast
 %nonassoc NOELSE
 %nonassoc ELSE
 %nonassoc PRINT
-%right ASSIGN
+%right ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
+%right ASSIGNREG
 %left OR
 %left AND
 %left EQ NEQ
@@ -107,7 +108,12 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr         { Unop(Not, $2) }
-  | ID ASSIGN expr   { Assign($1, $3) }
+  | ID ASSIGNREG expr   { Assign($1, AssnReg, $3) }
+  | ID ASSIGNADD expr   { Assign($1, AssnAdd, $3) }
+  | ID ASSIGNSUB expr   { Assign($1, AssnSub, $3) }
+  | ID ASSIGNMULT expr  { Assign($1, AssnMult, $3) }
+  | ID ASSIGNDIV expr   { Assign($1, AssnDiv, $3) }
+  | ID ASSIGNMOD expr   { Assign($1, AssnMod, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 

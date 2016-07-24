@@ -109,8 +109,16 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
-      | A.Assign (s, e) -> let e' = expr builder e in
-	                   ignore (L.build_store e' (lookup s) builder); e'
+      | A.Assign (s, op, e) ->
+          let e' = (match op with
+            A.AssnReg     -> expr builder e
+          | A.AssnAdd     -> expr builder (A.Binop((A.Id s), A.Add, e))
+          | A.AssnSub     -> expr builder (A.Binop((A.Id s), A.Sub, e))
+          | A.AssnMult    -> expr builder (A.Binop((A.Id s), A.Mult, e))
+          | A.AssnDiv     -> expr builder (A.Binop((A.Id s), A.Div, e))
+          | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e)))
+          in
+          ignore (L.build_store e' (lookup s) builder); e'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
