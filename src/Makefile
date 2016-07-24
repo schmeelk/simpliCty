@@ -4,26 +4,26 @@
 
 # Easiest way to build: using ocamlbuild, which in turn uses ocamlfind
 
-.PHONY : microc.native
+.PHONY : simplicty.native
 
 microc.native :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
-		microc.native
+		simplicty.native
 
 # "make clean" removes all generated files
 
 .PHONY : clean
 clean :
 	ocamlbuild -clean
-	rm -rf testall.log *.diff microc scanner.ml parser.ml parser.mli
+	rm -rf testall.log *.diff simplicty scanner.ml parser.ml parser.mli
 	rm -rf *.cmx *.cmi *.cmo *.cmx *.o
 
 # More detailed: build using ocamlc/ocamlopt + ocamlfind to locate LLVM
 
-OBJS = ast.cmx codegen.cmx parser.cmx scanner.cmx semant.cmx microc.cmx
+OBJS = ast.cmx codegen.cmx parser.cmx scanner.cmx semant.cmx simplicty.cmx
 
-microc : $(OBJS)
-	ocamlfind ocamlopt -linkpkg -package llvm -package llvm.analysis $(OBJS) -o microc
+simplicty : $(OBJS)
+	ocamlfind ocamlopt -linkpkg -package llvm -package llvm.analysis $(OBJS) -o simplicty
 
 scanner.ml : scanner.mll
 	ocamllex scanner.mll
@@ -70,8 +70,8 @@ FAILS = assign1 assign2 assign3 dead1 dead2 expr1 expr2 for1 for2	\
 TESTFILES = $(TESTS:%=test-%.mc) $(TESTS:%=test-%.out) \
 	    $(FAILS:%=fail-%.mc) $(FAILS:%=fail-%.err)
 
-TARFILES = ast.ml codegen.ml Makefile microc.ml parser.mly README scanner.mll \
-	semant.ml testall.sh $(TESTFILES:%=tests/%)
+TARFILES = ast.ml codegen.ml Makefile parser.mly README scanner.mll \
+	semant.ml simplicty.ml testall.sh $(TESTFILES:%=tests/%)
 
 microc-llvm.tar.gz : $(TARFILES)
 	cd .. && tar czf microc-llvm/microc-llvm.tar.gz \

@@ -1,4 +1,14 @@
-(* Abstract Syntax Tree and functions for printing it *)
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/ast.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Generate abstract syntax tree
+          * Functions for printing the AST
+Modified: 2016-07-24
+*)
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or

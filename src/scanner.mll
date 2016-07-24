@@ -1,4 +1,13 @@
-(* Ocamllex scanner for MicroC *)
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/scanner.mll
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Scan an inputted SimpliCty file
+Modified: 2016-07-24
+*)
 
 { open Parser }
 

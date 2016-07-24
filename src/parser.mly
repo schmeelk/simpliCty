@@ -1,4 +1,13 @@
-/* Ocamlyacc parser for MicroC */
+/*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/parser.mly
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Ocamlyacc parser for SimpliCty
+Modified: 2016-07-24
+*/
 
 %{
 open Ast

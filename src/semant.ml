@@ -1,13 +1,18 @@
-(* Semantic checking for the MicroC compiler *)
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/semant.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Semantic checking for the SimpliCty compiler
+          * Returns void if successful. Otherwise throws exception.
+Modified: 2016-07-24
+*)
 
 open Ast
 
 module StringMap = Map.Make(String)
-
-(* Semantic checking of a program. Returns void if successful,
-   throws an exception if something is wrong.
-
-   Check each global variable, then check each function *)
 
 let check (globals, functions) =
 

@@ -1,7 +1,15 @@
-(* Code generation: translate takes a semantically checked AST and
-produces LLVM IR
-
-LLVM tutorial: Make sure to read the OCaml version of the tutorial
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/codegen.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Translates semantically checked SimpliCty AST to LLVM IR
+          * Functions for printing the AST
+Modified: 2016-07-24
+*)
+(*: Make sure to read the OCaml version of the tutorial
 
 http://llvm.org/docs/tutorial/index.html
 
