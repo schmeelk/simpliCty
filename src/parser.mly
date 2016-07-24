@@ -26,7 +26,7 @@ open Ast
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE MODULO
-%right PLUSPLUS MINUSMINUS
+%nonassoc PLUSPLUS MINUSMINUS
 %right NOT NEG
 
 %start program
@@ -110,8 +110,10 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr             { Unop(Not, $2) }
-  | PLUSPLUS ID          { Assign($2, AssnAdd, Literal(1)) }
-  | MINUSMINUS ID        { Assign($2, AssnSub, Literal(1)) }
+  | PLUSPLUS ID          { Crement(Pre,  PlusPlus,   $2) }
+  | MINUSMINUS ID        { Crement(Pre,  MinusMinus, $2) }
+  | ID PLUSPLUS          { Crement(Post, PlusPlus,   $1) }
+  | ID MINUSMINUS        { Crement(Post, MinusMinus, $1) }
   | ID ASSIGNREG expr   { Assign($1, AssnReg, $3) }
   | ID ASSIGNADD expr   { Assign($1, AssnAdd, $3) }
   | ID ASSIGNSUB expr   { Assign($1, AssnSub, $3) }

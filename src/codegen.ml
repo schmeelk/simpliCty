@@ -109,11 +109,20 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
-      (* This is a deummy case to stop errors. This will never be processed. *)
-      | A.Crement(op ,s) -> (match op with _ -> expr builder (A.Id s))
-          (*(match op with
-            A.PlusPlus -> expr builder (A.Assign(s, A.AssnAdd, (A.Literal 1)))
-          | A.MinusMinus -> expr builder (A.Assign(s, A.AssnSub, (A.Literal 1))))*)
+      | A.Crement(opDir, op, s) ->
+          (match opDir with
+            A.Pre -> (match op with
+                       A.PlusPlus -> expr builder (A.Assign(s, A.AssnAdd, (A.Literal 1)))
+                     | A.MinusMinus -> expr builder (A.Assign(s, A.AssnSub, (A.Literal 1)))
+                     )
+          | A.Post ->let s' = expr builder (A.Id s) in
+                     ignore(
+                       (match op with
+                         A.PlusPlus -> expr builder (A.Crement(A.Pre, A.PlusPlus, s))
+                       | A.MinusMinus -> expr builder (A.Crement(A.Pre,A.MinusMinus,s))
+                       )
+                     ); s'
+          )
       | A.Assign (s, op, e) ->
           let e' = (match op with
             A.AssnReg     -> expr builder e

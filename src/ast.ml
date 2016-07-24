@@ -7,6 +7,8 @@ type uop = Neg | Not
 
 type crement = PlusPlus | MinusMinus
 
+type crementDir = Pre | Post
+
 type typ = Int | Bool | Void
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
@@ -19,7 +21,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Crement of crement * string
+  | Crement of crementDir * crement * string
   | Assign of string * assn * expr
   | Call of string * expr list
   | Noexpr
@@ -68,6 +70,10 @@ let string_of_crement = function
     PlusPlus -> "++"
   | MinusMinus -> "--"
 
+let string_of_crementDir = function
+    Pre -> "pre"
+  | Post-> "post"
+
 let string_of_assn = function
     AssnReg -> "="
   | AssnAdd -> "+="
@@ -84,7 +90,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Crement (o, s) -> string_of_crement o ^ " " ^ s
+  | Crement (oD, o, s) -> string_of_crementDir oD ^ " " ^ string_of_crement o ^ " " ^ s
   | Assign(v, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"

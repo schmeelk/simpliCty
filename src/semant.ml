@@ -109,11 +109,12 @@ let check (globals, functions) =
 	 | Not when t = Bool -> Bool
          | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
 	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
-      (*| Crement(op, var) as ex -> let t = type_of_identifier var in
+      | Crement(opDir, op, var) as ex -> let t = type_of_identifier var in
         (match op with
            _ when t = Int -> Int
-         | _ -> raise (Failure ("illegal -crement " ^ string_of_typ t ^ " in " ^
-                                string_of_expr ex)) )*)
+         | _ -> raise (Failure ("illegal " ^string_of_crementDir opDir^string_of_crement op^
+                                " " ^ string_of_typ t ^ " in " ^
+                                string_of_expr ex)) )
       | Noexpr -> Void
       | Assign(var, op, e) as ex -> let lt = type_of_identifier var
                                 and rt = expr e in

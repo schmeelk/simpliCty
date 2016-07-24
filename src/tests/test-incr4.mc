@@ -1,9 +1,9 @@
 int main()
 {
 	int a;
-	a = 0;
+	a = 1;
 	print a;
-	print ++a;
+	print a--;
 	print a;
 	return 0;
 }
