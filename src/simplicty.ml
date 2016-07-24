@@ -1,5 +1,15 @@
-(* Top-level of the MicroC compiler: scan & parse the input,
-   check the resulting AST, generate LLVM IR, and dump the module *)
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/simplicty.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Top level for SimpliCty compiler
+            * Scan & parse input, global variables
+            * Check each function in the resulting AST, generate LLVM IR, dump module
+Modified: 2016-07-24
+*)
 
 type action = Ast | LLVM_IR | Compile
 

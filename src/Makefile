@@ -1,3 +1,13 @@
+# Project:  COMS S4115, SimpliCty Compiler
+# Filename: src/Makefile
+# Authors:  - Rui Gu,           rg2970
+#           - Adam Hadar,       anh2130
+#           - Zachary Moffitt,  znm2104
+#           - Suzanna Schmeelk, ss4648
+# Purpose:  * Builds the SimpliCty compiler
+# Modified: 2016-07-24
+
+
 # Make sure ocamlbuild can find opam-managed packages: first run
 #
 # eval `opam config env`
@@ -6,7 +16,7 @@
 
 .PHONY : simplicty.native
 
-microc.native :
+simplicty.native :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
 		simplicty.native
 
@@ -45,8 +55,8 @@ ast.cmo :
 ast.cmx :
 codegen.cmo : ast.cmo
 codegen.cmx : ast.cmx
-microc.cmo : semant.cmo scanner.cmo parser.cmi codegen.cmo ast.cmo
-microc.cmx : semant.cmx scanner.cmx parser.cmx codegen.cmx ast.cmx
+simplicty.cmo : semant.cmo scanner.cmo parser.cmi codegen.cmo ast.cmo
+simplicty.cmx : semant.cmx scanner.cmx parser.cmx codegen.cmx ast.cmx
 parser.cmo : ast.cmo parser.cmi
 parser.cmx : ast.cmx parser.cmi
 scanner.cmo : parser.cmi
@@ -73,6 +83,6 @@ TESTFILES = $(TESTS:%=test-%.mc) $(TESTS:%=test-%.out) \
 TARFILES = ast.ml codegen.ml Makefile parser.mly README scanner.mll \
 	semant.ml simplicty.ml testall.sh $(TESTFILES:%=tests/%)
 
-microc-llvm.tar.gz : $(TARFILES)
-	cd .. && tar czf microc-llvm/microc-llvm.tar.gz \
-		$(TARFILES:%=microc-llvm/%)
+simplicty.tar.gz : $(TARFILES)
+	cd .. && tar czf simplicty/simplicty.tar.gz \
+		$(TARFILES:%=simplicty/%)

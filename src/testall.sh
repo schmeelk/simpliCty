@@ -18,7 +18,7 @@ LLI="lli"
 # Path to the simpliCty compiler.  Usually "./simplicty.native"
 # Try "_build/simplicty.native" if ocamlbuild was unable to create a symbolic link.
 SIMPLICTY="./simplicty.native"
-#MICROC="_build/simplicty.native"
+#SIMPLICTY="_build/simplicty.native"
 
 # Set time limit for all operations
 ulimit -t 30
@@ -80,8 +80,8 @@ RunFail() {
 Check() {
     error=0
     basename=`echo $1 | sed 's/.*\\///
-                             s/.mc//'`
-    reffile=`echo $1 | sed 's/.mc$//'`
+                             s/.sct//'`
+    reffile=`echo $1 | sed 's/.sct$//'`
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
@@ -113,8 +113,8 @@ Check() {
 CheckFail() {
     error=0
     basename=`echo $1 | sed 's/.*\\///
-                             s/.mc//'`
-    reffile=`echo $1 | sed 's/.mc$//'`
+                             s/.sct//'`
+    reffile=`echo $1 | sed 's/.sct$//'`
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
@@ -168,7 +168,7 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="tests/test-*.mc tests/fail-*.mc"
+    files="tests/test-*.sct tests/fail-*.sct"
 fi
 
 for file in $files
