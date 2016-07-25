@@ -1,11 +1,23 @@
-(* Abstract Syntax Tree and functions for printing it *)
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/ast.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Generate abstract syntax tree
+          * Functions for printing the AST
+Modified: 2016-07-24
+*)
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
 
 type uop = Neg | Not
 
-type ment = PlusPlus | MinusMinus
+type crement = PlusPlus | MinusMinus
+
+type crementDir = Pre | Post
 
 type typ = Int | Bool | Void
 
@@ -19,7 +31,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Ment of ment * string
+  | Crement of crementDir * crement * string
   | Assign of string * assn * expr
   | Call of string * expr list
   | Noexpr
@@ -64,9 +76,13 @@ let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
 
-let string_of_ment = function
+let string_of_crement = function
     PlusPlus -> "++"
   | MinusMinus -> "--"
+
+let string_of_crementDir = function
+    Pre -> "pre"
+  | Post-> "post"
 
 let string_of_assn = function
     AssnReg -> "="
@@ -84,7 +100,10 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Ment(o, s) -> string_of_ment o ^ " " ^ s
+  | Crement (oD, o, s) -> (match oD with
+      Pre -> string_of_crement o ^ " " ^ s
+    | Post -> s ^ " " ^ string_of_crement o
+    )
   | Assign(v, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"

@@ -1,7 +1,15 @@
-(* Code generation: translate takes a semantically checked AST and
-produces LLVM IR
-
-LLVM tutorial: Make sure to read the OCaml version of the tutorial
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/codegen.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Translates semantically checked SimpliCty AST to LLVM IR
+          * Functions for printing the AST
+Modified: 2016-07-24
+*)
+(*: Make sure to read the OCaml version of the tutorial
 
 http://llvm.org/docs/tutorial/index.html
 
@@ -19,7 +27,7 @@ module StringMap = Map.Make(String)
 
 let translate (globals, functions) =
   let context = L.global_context () in
-  let the_module = L.create_module context "MicroC"
+  let the_module = L.create_module context "SimpliCty"
   and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
   and i1_t   = L.i1_type   context
@@ -109,6 +117,20 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
+      | A.Crement(opDir, op, s) ->
+          (match opDir with
+            A.Pre -> (match op with
+                       A.PlusPlus -> expr builder (A.Assign(s, A.AssnAdd, (A.Literal 1)))
+                     | A.MinusMinus -> expr builder (A.Assign(s, A.AssnSub, (A.Literal 1)))
+                     )
+          | A.Post ->let s' = expr builder (A.Id s) in
+                     ignore(
+                       (match op with
+                         A.PlusPlus -> expr builder (A.Crement(A.Pre, A.PlusPlus, s))
+                       | A.MinusMinus -> expr builder (A.Crement(A.Pre,A.MinusMinus,s))
+                       )
+                     ); s'
+          )
       | A.Assign (s, op, e) ->
           let e' = (match op with
             A.AssnReg     -> expr builder e
@@ -119,14 +141,6 @@ let translate (globals, functions) =
           | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e))
           ) in
           ignore (L.build_store e' (lookup s) builder); e'
-      | A.Ment(op, s) ->
-          let e' = expr builder (A.Id s)
-          and one = expr builder (A.Literal 1) in
-          let s' = (match op with
-            A.PlusPlus -> L.build_add e' one "tmp" builder
-          | A.MinusMinus -> L.build_sub e' one "tmp" builder
-          ) in
-          ignore (L.build_store s' (lookup s) builder); s'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder

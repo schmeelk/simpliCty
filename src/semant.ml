@@ -1,13 +1,18 @@
-(* Semantic checking for the MicroC compiler *)
+(*
+Project:  COMS S4115, SimpliCty Compiler
+Filename: src/semant.ml
+Authors:  - Rui Gu,           rg2970
+          - Adam Hadar,       anh2130
+          - Zachary Moffitt,  znm2104
+          - Suzanna Schmeelk, ss4648
+Purpose:  * Semantic checking for the SimpliCty compiler
+          * Returns void if successful. Otherwise throws exception.
+Modified: 2016-07-24
+*)
 
 open Ast
 
 module StringMap = Map.Make(String)
-
-(* Semantic checking of a program. Returns void if successful,
-   throws an exception if something is wrong.
-
-   Check each global variable, then check each function *)
 
 let check (globals, functions) =
 
@@ -109,10 +114,11 @@ let check (globals, functions) =
 	 | Not when t = Bool -> Bool
          | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
 	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
-      | Ment(op, var) as ex -> let t = type_of_identifier var in
+      | Crement(opDir, op, var) as ex -> let t = type_of_identifier var in
         (match op with
            _ when t = Int -> Int
-         | _ -> raise (Failure ("illegal -crement " ^ string_of_typ t ^ " in " ^
+         | _ -> raise (Failure ("illegal " ^string_of_crementDir opDir^string_of_crement op^
+                                " " ^ string_of_typ t ^ " in " ^
                                 string_of_expr ex)) )
       | Noexpr -> Void
       | Assign(var, op, e) as ex -> let lt = type_of_identifier var
