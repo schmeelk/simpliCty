@@ -49,6 +49,10 @@ let translate (globals, functions) =
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func = L.declare_function "printf" printf_t the_module in
 
+  (* Declare putchar(), which the putchar built-in function will call *)
+  let putchar_t = L.function_type i32_t [| i32_t |] in
+  let putchar_func = L.declare_function "putchar" putchar_t the_module in
+
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls =
     let function_decl m fdecl =
@@ -144,6 +148,9 @@ let translate (globals, functions) =
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
+      | A.Call ("putchar", [e]) ->
+      L.build_call putchar_func [| (expr builder e) |]
+        "putchar" builder
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
@@ -199,7 +206,6 @@ let translate (globals, functions) =
 
       | A.For (e1, e2, e3, body) -> stmt builder
 	    ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
-      | A.Print (e) -> ignore (e); builder
     in
 
     (* Build the code for each statement in the function *)

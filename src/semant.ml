@@ -44,6 +44,11 @@ let check (globals, functions) =
   report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals);
 
   (**** Checking Functions ****)
+  if List.mem "putchar" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function putchar may not be defined")) else ();
+
+  report_duplicate (fun n -> "duplicate function " ^ n)
+    (List.map (fun fd -> fd.fname) functions);
 
   if List.mem "print" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print may not be defined")) else ();
@@ -57,8 +62,11 @@ let check (globals, functions) =
        locals = []; body = [] } (StringMap.singleton "printb"
      { typ = Void; fname = "printb"; formals = [(Bool, "x")];
        locals = []; body = [] })
-   in
-     
+  in
+  let built_in_decls =  StringMap.add "putchar"
+     { typ = Void; fname = "putchar"; formals = [(Int, "x")];
+       locals = []; body = [] } built_in_decls
+  in 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
                          built_in_decls functions
   in
@@ -162,7 +170,6 @@ let check (globals, functions) =
       | For(e1, e2, e3, st) -> ignore (expr e1); check_bool_expr e2;
                                ignore (expr e3); stmt st
       | While(p, s) -> check_bool_expr p; stmt s
-      | Print(e) -> ignore (expr e)
     in
 
     stmt (Block func.body)
