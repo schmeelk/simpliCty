@@ -7,7 +7,7 @@ Authors:  - Rui Gu,           rg2970
           - Suzanna Schmeelk, ss4648
 Purpose:  * Semantic checking for the SimpliCty compiler
           * Returns void if successful. Otherwise throws exception.
-Modified: 2016-07-24
+Modified: 2016-07-25
 *)
 
 open Ast
@@ -97,7 +97,11 @@ let check (globals, functions) =
     let rec expr = function
 	Literal _ -> Int
       | BoolLit _ -> Bool
-      | Id s -> type_of_identifier s
+      | Id(t, s, _) -> 
+        (match t with
+          Primitive -> type_of_identifier s
+        | Array -> type_of_identifier s
+        | Struct -> type_of_identifier s)
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
           Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
@@ -114,14 +118,14 @@ let check (globals, functions) =
 	 | Not when t = Bool -> Bool
          | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
 	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
-      | Crement(opDir, op, var) as ex -> let t = type_of_identifier var in
+      | Crement(opDir, op, _,var,_) as ex -> let t = type_of_identifier var in
         (match op with
            _ when t = Int -> Int
          | _ -> raise (Failure ("illegal " ^string_of_crementDir opDir^string_of_crement op^
                                 " " ^ string_of_typ t ^ " in " ^
                                 string_of_expr ex)) )
       | Noexpr -> Void
-      | Assign(var, op, e) as ex -> let lt = type_of_identifier var
+      | Assign(_,var,_, op, e) as ex -> let lt = type_of_identifier var
                                 and rt = expr e in
 	(match op with _ ->
         check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^

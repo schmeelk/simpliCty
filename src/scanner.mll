@@ -6,7 +6,7 @@ Authors:  - Rui Gu,           rg2970
           - Zachary Moffitt,  znm2104
           - Suzanna Schmeelk, ss4648
 Purpose:  * Scan an inputted SimpliCty file
-Modified: 2016-07-24
+Modified: 2016-07-25
 *)
 
 { open Parser }
@@ -18,6 +18,8 @@ rule token = parse
 | ')'      { RPAREN }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
+| '['      { LBRACKET }
+| ']'      { RBRACKET }
 | ';'      { SEMI }
 | ','      { COMMA }
 | '+'      { PLUS }

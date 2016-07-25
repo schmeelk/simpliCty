@@ -7,8 +7,10 @@ Authors:  - Rui Gu,           rg2970
           - Suzanna Schmeelk, ss4648
 Purpose:  * Generate abstract syntax tree
           * Functions for printing the AST
-Modified: 2016-07-24
+Modified: 2016-07-25
 *)
+
+type decl = Primitive | Array | Struct
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
@@ -28,11 +30,11 @@ type bind = typ * string
 type expr =
     Literal of int
   | BoolLit of bool
-  | Id of string
+  | Id of decl * string * expr
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Crement of crementDir * crement * string
-  | Assign of string * assn * expr
+  | Crement of crementDir * crement * decl * string * expr
+  | Assign of decl * string * expr * assn * expr
   | Call of string * expr list
   | Noexpr
 
@@ -56,6 +58,11 @@ type func_decl = {
 type program = bind list * func_decl list
 
 (* Pretty-printing functions *)
+
+let string_of_decl = function
+    Primitive -> "prime"
+  | Array -> "array"
+  | Struct -> "struct"
 
 let string_of_op = function
     Add -> "+"
@@ -96,15 +103,19 @@ let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | Id(s) -> s
+  | Id(t, s, _) ->
+    (match t with
+      Primitive -> s
+    | Array -> s
+    | Struct -> s)
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Crement (oD, o, s) -> (match oD with
+  | Crement (oD, o, _, s, _) -> (match oD with
       Pre -> string_of_crement o ^ " " ^ s
     | Post -> s ^ " " ^ string_of_crement o
     )
-  | Assign(v, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
+  | Assign(_, v, _, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
