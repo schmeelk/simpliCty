@@ -7,7 +7,7 @@ Authors:  - Rui Gu,           rg2970
           - Suzanna Schmeelk, ss4648
 Purpose:  * Translates semantically checked SimpliCty AST to LLVM IR
           * Functions for printing the AST
-Modified: 2016-07-24
+Modified: 2016-07-25
 *)
 (*: Make sure to read the OCaml version of the tutorial
 
@@ -97,7 +97,11 @@ let translate (globals, functions) =
 	A.Literal i -> L.const_int i32_t i
       | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
       | A.Noexpr -> L.const_int i32_t 0
-      | A.Id s -> L.build_load (lookup s) s builder
+      | A.Id(t, s, _) ->
+          (match t with
+            A.Primitive -> L.build_load (lookup s) s builder
+          | A.Array -> L.build_load (lookup s) s builder
+          | A.Struct -> L.build_load (lookup s) s builder)
       | A.Binop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
@@ -121,28 +125,28 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
-      | A.Crement(opDir, op, s) ->
+      | A.Crement(opDir, op, t, s, e) ->
           (match opDir with
             A.Pre -> (match op with
-                       A.PlusPlus -> expr builder (A.Assign(s, A.AssnAdd, (A.Literal 1)))
-                     | A.MinusMinus -> expr builder (A.Assign(s, A.AssnSub, (A.Literal 1)))
+                       A.PlusPlus -> expr builder (A.Assign(t,s,e, A.AssnAdd, (A.Literal 1)))
+                     | A.MinusMinus -> expr builder (A.Assign(t,s,e, A.AssnSub, (A.Literal 1)))
                      )
-          | A.Post ->let s' = expr builder (A.Id s) in
+          | A.Post ->let s' = expr builder (A.Id(t,s,e)) in
                      ignore(
                        (match op with
-                         A.PlusPlus -> expr builder (A.Crement(A.Pre, A.PlusPlus, s))
-                       | A.MinusMinus -> expr builder (A.Crement(A.Pre,A.MinusMinus,s))
+                         A.PlusPlus -> expr builder (A.Crement(A.Pre, A.PlusPlus, t,s,e))
+                       | A.MinusMinus -> expr builder (A.Crement(A.Pre,A.MinusMinus,t,s,e))
                        )
                      ); s'
           )
-      | A.Assign (s, op, e) ->
+      | A.Assign (t,s,e1, op, e2) ->
           let e' = (match op with
-            A.AssnReg     -> expr builder e
-          | A.AssnAdd     -> expr builder (A.Binop((A.Id s), A.Add, e))
-          | A.AssnSub     -> expr builder (A.Binop((A.Id s), A.Sub, e))
-          | A.AssnMult    -> expr builder (A.Binop((A.Id s), A.Mult, e))
-          | A.AssnDiv     -> expr builder (A.Binop((A.Id s), A.Div, e))
-          | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e))
+            A.AssnReg     -> expr builder e2
+          | A.AssnAdd     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Add, e2))
+          | A.AssnSub     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Sub, e2))
+          | A.AssnMult    -> expr builder (A.Binop((A.Id(t,s,e1)), A.Mult, e2))
+          | A.AssnDiv     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Div, e2))
+          | A.AssnMod     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Mod, e2))
           ) in
           ignore (L.build_store e' (lookup s) builder); e'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
