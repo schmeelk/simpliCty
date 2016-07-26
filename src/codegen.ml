@@ -133,22 +133,17 @@ let translate (globals, functions) =
           | A.Not     -> L.build_not) e' "tmp" builder
       | A.Crement(opDir, op, lv) ->
           (match opDir with
-            A.Pre  -> (match op with
-                        A.PlusPlus   -> expr builder (A.Assign(lv, A.AssnAdd, (A.Primary (A.Literal 1))))
-                      | A.MinusMinus -> expr builder (A.Assign(lv, A.AssnSub, (A.Primary (A.Literal 1))))
-                      )
-          | A.Post -> let lv' = lvalue builder lv in
-                      ignore(
-                        (match op with
-                          A.PlusPlus   -> expr builder (A.Crement(A.Pre, A.PlusPlus,   lv))
-                        | A.MinusMinus -> expr builder (A.Crement(A.Pre, A.MinusMinus, lv))
-                        )
-                      ); lv'
+            A.Pre  -> expr builder (A.Assign(lv, (match op with
+              A.PlusPlus   -> A.AssnAdd
+            | A.MinusMinus -> A.AssnSub), (A.Primary (A.Literal 1))))
+          | A.Post ->
+              let lv' = lvalue builder lv in
+             ignore(expr builder (A.Crement(A.Pre, op, lv))); lv'
           )
       | A.Assign (lv, op, e) ->
           let lv'  = (A.Primary (A.Lvalue lv))
           and lv'' = (match lv with
-            A.Id(s) -> s
+            A.Id(s)    -> s
           | A.Arr(s,_) -> s) in
           let e' = (match op with
             A.AssnReg     -> expr builder e

@@ -64,26 +64,26 @@ type program = bind list * func_decl list
 (* Pretty-printing functions *)
 
 let string_of_op = function
-    Add -> "+"
-  | Sub -> "-"
-  | Mult -> "*"
-  | Div -> "/"
-  | Mod -> "%"
-  | Equal -> "=="
-  | Neq -> "!="
-  | Less -> "<"
-  | Leq -> "<="
+    Add     -> "+"
+  | Sub     -> "-"
+  | Mult    -> "*"
+  | Div     -> "/"
+  | Mod     -> "%"
+  | Equal   -> "=="
+  | Neq     -> "!="
+  | Less    -> "<"
+  | Leq     -> "<="
   | Greater -> ">"
-  | Geq -> ">="
-  | And -> "&&"
-  | Or -> "||"
+  | Geq     -> ">="
+  | And     -> "&&"
+  | Or      -> "||"
 
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
 
 let string_of_crement = function
-    PlusPlus -> "++"
+    PlusPlus   -> "++"
   | MinusMinus -> "--"
 
 let string_of_crementDir = function
@@ -91,52 +91,52 @@ let string_of_crementDir = function
   | Post-> "post"
 
 let string_of_assn = function
-    AssnReg -> "="
-  | AssnAdd -> "+="
-  | AssnSub -> "-="
+    AssnReg  -> "="
+  | AssnAdd  -> "+="
+  | AssnSub  -> "-="
   | AssnMult -> "*="
-  | AssnDiv -> "/="
-  | AssnMod -> "%="
+  | AssnDiv  -> "/="
+  | AssnMod  -> "%="
 
 let string_of_lvalue = function
     Id(s)    -> s
   | Arr(s,_) -> s
 
 let string_of_primary = function
-    Literal(l) -> string_of_int l
-  | BoolLit(true) -> "true"
-  | BoolLit(false) -> "false"
-  | Lvalue(l) -> string_of_lvalue l
+    Literal(l)     -> string_of_int l
+  | BoolLit(l)     -> if l = true then "true" else "false"
+  | Lvalue(l)      -> string_of_lvalue l
 
 let rec string_of_expr = function
-    Primary(l) -> string_of_primary l
-  | Binop(e1, o, e2) ->
-      string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
-  | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Crement (oD, o, lv) -> (match oD with
-      Pre -> string_of_crement o ^ " " ^ string_of_lvalue lv
-    | Post -> string_of_lvalue lv ^ " " ^ string_of_crement o
+    Primary(l)          -> string_of_primary l
+  | Binop(e1, o, e2)    ->
+      string_of_expr e1 ^" "^ string_of_op o ^" "^ string_of_expr e2
+  | Unop(o, e)          -> string_of_uop o ^ string_of_expr e
+  | Crement (oD, o, lv) ->
+    (match oD with
+      Pre  -> string_of_crement o ^" "^ string_of_lvalue lv
+    | Post -> string_of_lvalue lv ^" "^ string_of_crement o
     )
-  | Assign(lv, o, e) -> string_of_lvalue lv ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
-  | Call(f, el) ->
-      f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-  | Noexpr -> ""
+  | Assign(lv, o, e)    -> string_of_lvalue lv ^" "^ string_of_assn o ^" "^ string_of_expr e
+  | Call(f, el)         ->
+      f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^")"
+  | Noexpr              -> ""
 
 let rec string_of_stmt = function
-    Block(stmts) ->
-      "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
-  | Expr(expr) -> string_of_expr expr ^ ";\n";
-  | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-  | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
-  | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
-      string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
-  | For(e1, e2, e3, s) ->
-      "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
-      string_of_expr e3  ^ ") " ^ string_of_stmt s
-  | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+    Block(stmts)        ->
+      "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
+  | Expr(expr)          -> string_of_expr expr ^";\n";
+  | Return(expr)        -> "return "^ string_of_expr expr ^";\n";
+  | If(e, s, Block([])) -> "if ("^ string_of_expr e ^")\n"^ string_of_stmt s
+  | If(e, s1, s2)       -> "if ("^ string_of_expr e ^")\n"^
+      string_of_stmt s1 ^"else\n"^ string_of_stmt s2
+  | For(e1, e2, e3, s)  ->
+      "for (" ^ string_of_expr e1 ^" ; "^ string_of_expr e2 ^" ; "^
+      string_of_expr e3  ^") "^ string_of_stmt s
+  | While(e, s)         -> "while ("^ string_of_expr e ^") "^ string_of_stmt s
 
 let string_of_typ = function
-    Int -> "int"
+    Int  -> "int"
   | Bool -> "bool"
   | Void -> "void"
 
