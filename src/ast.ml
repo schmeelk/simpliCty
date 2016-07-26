@@ -10,6 +10,8 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
+type decl = Primitive | Array | Struct
+
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
 
@@ -62,6 +64,11 @@ type func_decl = {
 type program = bind list * func_decl list
 
 (* Pretty-printing functions *)
+
+let string_of_decl = function
+    Primitive -> "prime"
+  | Array -> "array"
+  | Struct -> "struct"
 
 let string_of_op = function
     Add     -> "+"
@@ -121,7 +128,6 @@ let rec string_of_expr = function
   | Call(f, el)         ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^")"
   | Noexpr              -> ""
-
 let rec string_of_stmt = function
     Block(stmts)        ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
