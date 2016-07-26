@@ -25,7 +25,7 @@ simplicty.native :
 .PHONY : clean
 clean :
 	ocamlbuild -clean
-	rm -rf testall.log *.diff simplicty scanner.ml parser.ml parser.mli
+	rm -rf regression-tests/test.log regression-tests/test-output/* simplicty scanner.ml parser.ml parser.mli
 	rm -rf *.cmx *.cmi *.cmo *.cmx *.o
 
 # More detailed: build using ocamlc/ocamlopt + ocamlfind to locate LLVM
@@ -77,11 +77,11 @@ FAILS = assign1 assign2 assign3 dead1 dead2 expr1 expr2 for1 for2	\
     func9 global1 global2 if1 if2 if3 nomain return1 return2 while1	\
     while2
 
-TESTFILES = $(TESTS:%=test-%.mc) $(TESTS:%=test-%.out) \
-	    $(FAILS:%=fail-%.mc) $(FAILS:%=fail-%.err)
+TESTFILES = $(TESTS:%=test-%.sct) $(TESTS:%=test-%.out) \
+	    $(FAILS:%=fail-%.sct) $(FAILS:%=fail-%.err)
 
 TARFILES = ast.ml codegen.ml Makefile parser.mly README scanner.mll \
-	semant.ml simplicty.ml testall.sh $(TESTFILES:%=tests/%)
+	semant.ml simplicty.ml regression-tests/test.sh $(TESTFILES:%=regression-tests/tests/%) 
 
 simplicty.tar.gz : $(TARFILES)
 	cd .. && tar czf simplicty/simplicty.tar.gz \
