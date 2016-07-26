@@ -115,8 +115,12 @@ let translate (globals, functions) =
     in
     (*Construct code for lvalues; return value pointed to*)
     let lvalue builder = function
-      A.Id(s)  -> L.build_load(lookup s) s builder
-    | A.Arr(s,_) -> L.build_load (lookup s) s builder
+      A.Id(s)  -> L.build_load (lookup s) s builder
+    | A.Arr(s,i) ->
+        let s' = lookup s
+        and i' = L.const_int i32_t i in
+        let addr = L.build_in_bounds_gep s' [|i'|] "tmp" builder in
+        L.build_load addr s builder
     in
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
@@ -164,8 +168,11 @@ let translate (globals, functions) =
       | A.Assign (lv, op, e) ->
           let lv'  = (A.Primary (A.Lvalue lv))
           and lv'' = (match lv with
-            A.Id(s)    -> s
-          | A.Arr(s,_) -> s) in
+            A.Id(s)    -> lookup s
+          | A.Arr(s,i) ->
+              let s' = lookup s
+              and i' = L.const_int i32_t i in
+              L.build_in_bounds_gep s' [|i'|] "tmp" builder) in
           let e' = (match op with
             A.AssnReg     -> expr builder e
           | A.AssnAdd     -> expr builder (A.Binop(lv', A.Add,  e))
@@ -174,7 +181,7 @@ let translate (globals, functions) =
           | A.AssnDiv     -> expr builder (A.Binop(lv', A.Div,  e))
           | A.AssnMod     -> expr builder (A.Binop(lv', A.Mod,  e))
           ) in
-          ignore (L.build_store e' (lookup lv'') builder); e'
+          ignore (L.build_store e' lv'' builder); e'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
