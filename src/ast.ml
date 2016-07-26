@@ -10,7 +10,7 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
-type decl = Primitive | Array | Struct
+type decl = Primitive | Array (* | Struct *)
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
@@ -68,7 +68,7 @@ type program = bind list * func_decl list
 let string_of_decl = function
     Primitive -> "prime"
   | Array -> "array"
-  | Struct -> "struct"
+  (*| Struct -> "struct"*)
 
 let string_of_op = function
     Add     -> "+"
