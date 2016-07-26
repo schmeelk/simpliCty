@@ -78,7 +78,7 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-    typ ID SEMI                         { ($1, $2) }
+    typ ID SEMI                        { ($1, $2) }
   | typ LBRACKET expr RBRACKET ID SEMI { ($1, $5) }
 
 stmt_list:
@@ -101,11 +101,8 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    LITERAL                   { Literal($1) }
-  | TRUE                      { BoolLit(true) }
-  | FALSE                     { BoolLit(false) }
-  | ID                        { Id(Primitive, $1, Literal(0)) }
-  | ID LBRACKET expr RBRACKET { Id(Array, $1, $3) }
+    primary            { Primary($1) }
+  | LPAREN expr RPAREN { $2 }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
@@ -121,28 +118,28 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr             { Unop(Not, $2) }
-  | PLUSPLUS ID          { Crement(Pre,  PlusPlus,   Primitive, $2, Literal(0)) }
-  | MINUSMINUS ID        { Crement(Pre,  MinusMinus, Primitive, $2, Literal(0)) }
-  | ID PLUSPLUS          { Crement(Post, PlusPlus,   Primitive, $1, Literal(0)) }
-  | ID MINUSMINUS        { Crement(Post, MinusMinus, Primitive, $1, Literal(0)) }
-  | PLUSPLUS ID LBRACKET expr RBRACKET   {Crement(Pre,  PlusPlus,   Array, $2, $4)}
-  | MINUSMINUS ID LBRACKET expr RBRACKET {Crement(Pre,  MinusMinus, Array, $2, $4)}
-  | ID LBRACKET expr RBRACKET PLUSPLUS   {Crement(Post, PlusPlus,   Array, $1, $3)}
-  | ID LBRACKET expr RBRACKET MINUSMINUS {Crement(Post, MinusMinus, Array, $1, $3)}
-  | ID ASSIGNREG expr   { Assign(Primitive,$1,Literal(0), AssnReg, $3) }
-  | ID ASSIGNADD expr   { Assign(Primitive,$1,Literal(0), AssnAdd, $3) }
-  | ID ASSIGNSUB expr   { Assign(Primitive,$1,Literal(0), AssnSub, $3) }
-  | ID ASSIGNMULT expr  { Assign(Primitive,$1,Literal(0), AssnMult, $3) }
-  | ID ASSIGNDIV expr   { Assign(Primitive,$1,Literal(0), AssnDiv, $3) }
-  | ID ASSIGNMOD expr   { Assign(Primitive,$1,Literal(0), AssnMod, $3) }
-  | ID LBRACKET expr RBRACKET ASSIGNREG expr  { Assign(Array,$1,$3, AssnReg, $6) }
-  | ID LBRACKET expr RBRACKET ASSIGNADD expr  { Assign(Array,$1,$3, AssnAdd, $6) }
-  | ID LBRACKET expr RBRACKET ASSIGNSUB expr  { Assign(Array,$1,$3, AssnSub, $6) }
-  | ID LBRACKET expr RBRACKET ASSIGNMULT expr { Assign(Array,$1,$3, AssnMult,$6) }
-  | ID LBRACKET expr RBRACKET ASSIGNDIV expr  { Assign(Array,$1,$3, AssnDiv, $6) }
-  | ID LBRACKET expr RBRACKET ASSIGNMOD expr  { Assign(Array,$1,$3, AssnMod, $6) }
+  | PLUSPLUS lvalue          { Crement(Pre,  PlusPlus,   $2) }
+  | MINUSMINUS lvalue        { Crement(Pre,  MinusMinus, $2) }
+  | lvalue PLUSPLUS          { Crement(Post, PlusPlus,   $1) }
+  | lvalue MINUSMINUS        { Crement(Post, MinusMinus, $1) }
+  | lvalue ASSIGNREG expr   { Assign($1, AssnReg,  $3) }
+  | lvalue ASSIGNADD expr   { Assign($1, AssnAdd,  $3) }
+  | lvalue ASSIGNSUB expr   { Assign($1, AssnSub,  $3) }
+  | lvalue ASSIGNMULT expr  { Assign($1, AssnMult, $3) }
+  | lvalue ASSIGNDIV expr   { Assign($1, AssnDiv,  $3) }
+  | lvalue ASSIGNMOD expr   { Assign($1, AssnMod,  $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
-  | LPAREN expr RPAREN { $2 }
+
+primary:
+    LITERAL { Literal($1) }
+  | TRUE    { BoolLit(true) }
+  | FALSE   { BoolLit(false) }
+  | lvalue  { Lvalue($1) }
+
+lvalue:
+    ID                           { Id($1) }
+  | ID LBRACKET LITERAL RBRACKET { Arr($1,$3) }
+
 
 actuals_opt:
     /* nothing */ { [] }

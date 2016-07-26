@@ -92,16 +92,22 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
+    (* Construct code for lvalues; return value pointed to *)
+    let lvalue builder = function
+        A.Id(s)    -> L.build_load (lookup s) s builder
+      | A.Arr(s,_) -> L.build_load (lookup s) s builder
+    in
+    (* Construct code for literal primary values; return its value *)
+    let primary builder = function
+        A.Literal i -> L.const_int i32_t i
+      | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
+      | A.Lvalue lv -> lvalue builder lv
+    in
+
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
-	A.Literal i -> L.const_int i32_t i
-      | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
+        A.Primary p -> primary builder p
       | A.Noexpr -> L.const_int i32_t 0
-      | A.Id(t, s, _) ->
-          (match t with
-            A.Primitive -> L.build_load (lookup s) s builder
-          | A.Array -> L.build_load (lookup s) s builder
-          | A.Struct -> L.build_load (lookup s) s builder)
       | A.Binop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
@@ -125,30 +131,34 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
-      | A.Crement(opDir, op, t, s, e) ->
+      | A.Crement(opDir, op, lv) ->
           (match opDir with
-            A.Pre -> (match op with
-                       A.PlusPlus -> expr builder (A.Assign(t,s,e, A.AssnAdd, (A.Literal 1)))
-                     | A.MinusMinus -> expr builder (A.Assign(t,s,e, A.AssnSub, (A.Literal 1)))
-                     )
-          | A.Post ->let s' = expr builder (A.Id(t,s,e)) in
-                     ignore(
-                       (match op with
-                         A.PlusPlus -> expr builder (A.Crement(A.Pre, A.PlusPlus, t,s,e))
-                       | A.MinusMinus -> expr builder (A.Crement(A.Pre,A.MinusMinus,t,s,e))
-                       )
-                     ); s'
+            A.Pre  -> (match op with
+                        A.PlusPlus   -> expr builder (A.Assign(lv, A.AssnAdd, (A.Primary (A.Literal 1))))
+                      | A.MinusMinus -> expr builder (A.Assign(lv, A.AssnSub, (A.Primary (A.Literal 1))))
+                      )
+          | A.Post -> let lv' = lvalue builder lv in
+                      ignore(
+                        (match op with
+                          A.PlusPlus   -> expr builder (A.Crement(A.Pre, A.PlusPlus,   lv))
+                        | A.MinusMinus -> expr builder (A.Crement(A.Pre, A.MinusMinus, lv))
+                        )
+                      ); lv'
           )
-      | A.Assign (t,s,e1, op, e2) ->
+      | A.Assign (lv, op, e) ->
+          let lv'  = (A.Primary (A.Lvalue lv))
+          and lv'' = (match lv with
+            A.Id(s) -> s
+          | A.Arr(s,_) -> s) in
           let e' = (match op with
-            A.AssnReg     -> expr builder e2
-          | A.AssnAdd     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Add, e2))
-          | A.AssnSub     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Sub, e2))
-          | A.AssnMult    -> expr builder (A.Binop((A.Id(t,s,e1)), A.Mult, e2))
-          | A.AssnDiv     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Div, e2))
-          | A.AssnMod     -> expr builder (A.Binop((A.Id(t,s,e1)), A.Mod, e2))
+            A.AssnReg     -> expr builder e
+          | A.AssnAdd     -> expr builder (A.Binop(lv', A.Add,  e))
+          | A.AssnSub     -> expr builder (A.Binop(lv', A.Sub,  e))
+          | A.AssnMult    -> expr builder (A.Binop(lv', A.Mult, e))
+          | A.AssnDiv     -> expr builder (A.Binop(lv', A.Div,  e))
+          | A.AssnMod     -> expr builder (A.Binop(lv', A.Mod,  e))
           ) in
-          ignore (L.build_store e' (lookup s) builder); e'
+          ignore (L.build_store e' (lookup lv'') builder); e'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder

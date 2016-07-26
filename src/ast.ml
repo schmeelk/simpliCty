@@ -10,8 +10,6 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
-type decl = Primitive | Array | Struct
-
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
 
@@ -27,14 +25,21 @@ type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
 type bind = typ * string
 
-type expr =
+type lvalue = 
+    Id of string
+  | Arr of string * int
+
+type primary =
     Literal of int
   | BoolLit of bool
-  | Id of decl * string * expr
+  | Lvalue of lvalue
+
+type expr =
+    Primary of primary
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Crement of crementDir * crement * decl * string * expr
-  | Assign of decl * string * expr * assn * expr
+  | Crement of crementDir * crement * lvalue
+  | Assign of lvalue * assn * expr
   | Call of string * expr list
   | Noexpr
 
@@ -57,11 +62,6 @@ type func_decl = {
 type program = bind list * func_decl list
 
 (* Pretty-printing functions *)
-
-let string_of_decl = function
-    Primitive -> "prime"
-  | Array -> "array"
-  | Struct -> "struct"
 
 let string_of_op = function
     Add -> "+"
@@ -98,23 +98,26 @@ let string_of_assn = function
   | AssnDiv -> "/="
   | AssnMod -> "%="
 
-let rec string_of_expr = function
+let string_of_lvalue = function
+    Id(s)    -> s
+  | Arr(s,_) -> s
+
+let string_of_primary = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | Id(t, s, _) ->
-    (match t with
-      Primitive -> s
-    | Array -> s
-    | Struct -> s)
+  | Lvalue(l) -> string_of_lvalue l
+
+let rec string_of_expr = function
+    Primary(l) -> string_of_primary l
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Crement (oD, o, _, s, _) -> (match oD with
-      Pre -> string_of_crement o ^ " " ^ s
-    | Post -> s ^ " " ^ string_of_crement o
+  | Crement (oD, o, lv) -> (match oD with
+      Pre -> string_of_crement o ^ " " ^ string_of_lvalue lv
+    | Post -> string_of_lvalue lv ^ " " ^ string_of_crement o
     )
-  | Assign(_, v, _, o, e) -> v ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
+  | Assign(lv, o, e) -> string_of_lvalue lv ^ " " ^ string_of_assn o ^ " " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""

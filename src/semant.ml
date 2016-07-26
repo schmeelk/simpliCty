@@ -100,45 +100,61 @@ let check (globals, functions) =
       try StringMap.find s symbols
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
-
+    
+    let lvalue = function
+        Id(s)    -> type_of_identifier s
+      | Arr(s,_) -> type_of_identifier s
+    in 
+    let primary = function
+        Literal _  -> Int
+      | BoolLit _  -> Bool
+      | Lvalue  lv -> lvalue lv
+    in
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
-	Literal _ -> Int
-      | BoolLit _ -> Bool
-      | Id(t, s, _) -> 
-        (match t with
-          Primitive -> type_of_identifier s
-        | Array -> type_of_identifier s
-        | Struct -> type_of_identifier s)
-      | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
-	(match op with
-          Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
-	| Equal | Neq when t1 = t2 -> Bool
-	| Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
-	| And | Or when t1 = Bool && t2 = Bool -> Bool
-        | _ -> raise (Failure ("illegal binary operator " ^
-              string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-              string_of_typ t2 ^ " in " ^ string_of_expr e))
-        )
-      | Unop(op, e) as ex -> let t = expr e in
-	 (match op with
-	   Neg when t = Int -> Int
-	 | Not when t = Bool -> Bool
-         | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
-	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
-      | Crement(opDir, op, _,var,_) as ex -> let t = type_of_identifier var in
-        (match op with
-           _ when t = Int -> Int
-         | _ -> raise (Failure ("illegal " ^string_of_crementDir opDir^string_of_crement op^
-                                " " ^ string_of_typ t ^ " in " ^
-                                string_of_expr ex)) )
+        Primary p -> primary p
+      | Binop(e1, op, e2) as e ->
+          let t1 = expr e1
+          and t2 = expr e2 in
+	  (match op with
+            Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
+	  | Equal | Neq when t1 = t2                               -> Bool
+	  | Less | Leq | Greater | Geq when t1 = Int && t2 = Int   -> Bool
+	  | And | Or when t1 = Bool && t2 = Bool                   -> Bool
+          | _                                                      -> raise (Failure (
+              "illegal binary operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
+              string_of_typ t2 ^" in "^ string_of_expr e
+            ))
+          )
+      | Unop(op, e) as ex ->
+          let t = expr e in
+	  (match op with
+	    Neg when t = Int  -> Int
+	  | Not when t = Bool -> Bool
+          | _                 -> raise (Failure (
+              "illegal unary operator "^ string_of_uop op ^
+	  		   string_of_typ t ^" in "^ string_of_expr ex
+            ))
+          )
+      | Crement(opDir, op, lv) as ex ->
+          let t = lvalue lv in
+          (match op with
+            _ when t = Int -> Int
+          | _              -> raise (Failure (
+              "illegal "^ string_of_crementDir opDir ^ string_of_crement op ^
+              " "^ string_of_typ t ^" in "^ string_of_expr ex
+            ))
+          )
       | Noexpr -> Void
-      | Assign(_,var,_, op, e) as ex -> let lt = type_of_identifier var
-                                and rt = expr e in
-	(match op with _ ->
-        check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
-				     " = " ^ string_of_typ rt ^ " in " ^ 
-				     string_of_expr ex)))
+      | Assign(lv, op, e) as ex ->
+          let lt = lvalue lv
+          and rt = expr e in
+	  (match op with
+            _ -> check_assign lt rt (Failure (
+              "illegal assignment "^ string_of_typ lt ^" = "^ string_of_typ rt ^
+              " in "^ string_of_expr ex
+            ))
+          )
       | Call(fname, actuals) as call -> let fd = function_decl fname in
          if List.length actuals != List.length fd.formals then
            raise (Failure ("expecting " ^ string_of_int
