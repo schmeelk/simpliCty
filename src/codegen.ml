@@ -7,7 +7,7 @@ Authors:  - Rui Gu,           rg2970
           - Suzanna Schmeelk, ss4648
 Purpose:  * Translates semantically checked SimpliCty AST to LLVM IR
           * Functions for printing the AST
-Modified: 2016-07-24
+Modified: 2016-07-25
 *)
 (*: Make sure to read the OCaml version of the tutorial
 
@@ -40,9 +40,11 @@ let translate (globals, functions) =
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
-    let global_var m (t, n) =
-      let init = L.const_int (ltype_of_typ t) 0
-      in StringMap.add n (L.define_global n init the_module) m in
+    let global_var m (typ, name, _, _) =
+          let init = L.const_int (ltype_of_typ typ) 0
+          in StringMap.add name (L.define_global name init the_module) m
+      
+      in
     List.fold_left global_var StringMap.empty globals in
 
   (* Declare printf(), which the print built-in function will call *)
@@ -58,7 +60,7 @@ let translate (globals, functions) =
     let function_decl m fdecl =
       let name = fdecl.A.fname
       and formal_types =
-	Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.A.formals)
+	Array.of_list (List.map (fun (t,_, _, _) -> ltype_of_typ t) fdecl.A.formals)
       in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
@@ -68,36 +70,69 @@ let translate (globals, functions) =
     let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
-    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
+    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in    
     
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals" map *)
     let local_vars =
-      let add_formal m (t, n) p = L.set_value_name n p;
-	let local = L.build_alloca (ltype_of_typ t) n builder in
-	ignore (L.build_store p local builder);
-	StringMap.add n local m in
+      let add_formal m (typ, name, decl, size) p =
+        (match decl with
+          A.Primitive ->
+            L.set_value_name name p;
+	    let local = L.build_alloca (ltype_of_typ typ) name builder in
+	    ignore (L.build_store p local builder);
+	    StringMap.add name local m
+        | A.Array -> L.set_value_name name p;
+            let size_s = (match size with
+              A.Primary(A.Literal(s)) -> L.const_int i32_t s
+            | _ -> L.const_int i32_t 0) in
+	    let local = L.build_array_alloca (ltype_of_typ typ) size_s name builder in
+	    ignore (L.build_store p local builder);
+	    StringMap.add name local m
+        ) in
 
-      let add_local m (t, n) =
-	let local_var = L.build_alloca (ltype_of_typ t) n builder
-	in StringMap.add n local_var m in
-
+      let add_local m (typ, name, decl, size) =
+        (match decl with
+	  A.Primitive ->
+            let local_var = L.build_alloca (ltype_of_typ typ) name builder in
+            StringMap.add name local_var m
+	| A.Array ->
+            let size_s = (match size with
+              A.Primary(A.Literal(s)) -> L.const_int i32_t s
+            | _ -> L.const_int i32_t 0) in
+            let local_var = L.build_array_alloca (ltype_of_typ typ) size_s name builder in
+            StringMap.add name local_var m  
+        ) in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
           (Array.to_list (L.params the_function)) in
       List.fold_left add_local formals fdecl.A.locals in
+
 
     (* Return the value for a variable or formal argument *)
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
     in
+    (*Construct code for lvalues; return value pointed to*)
+    let lvalue builder = function
+      A.Id(s)  -> L.build_load (lookup s) s builder
+    | A.Arr(s,i) ->
+        let s' = lookup s
+        and i' = L.const_int i32_t i in
+        let addr = L.build_in_bounds_gep s' [|i'|] "tmp" builder in
+        L.build_load addr s builder
+    in
+    (*Construct code for literal primary values; return its value*)
+    let primary builder = function
+      A.Literal i -> L.const_int i32_t i
+    | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
+    | A.Lvalue lv -> lvalue builder lv
+    in
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
-	A.Literal i -> L.const_int i32_t i
-      | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
+        A.Primary p -> primary builder p
       | A.Noexpr -> L.const_int i32_t 0
-      | A.Id s -> L.build_load (lookup s) s builder
       | A.Binop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
@@ -121,30 +156,32 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder
-      | A.Crement(opDir, op, s) ->
+      | A.Crement(opDir, op, lv) ->
           (match opDir with
-            A.Pre -> (match op with
-                       A.PlusPlus -> expr builder (A.Assign(s, A.AssnAdd, (A.Literal 1)))
-                     | A.MinusMinus -> expr builder (A.Assign(s, A.AssnSub, (A.Literal 1)))
-                     )
-          | A.Post ->let s' = expr builder (A.Id s) in
-                     ignore(
-                       (match op with
-                         A.PlusPlus -> expr builder (A.Crement(A.Pre, A.PlusPlus, s))
-                       | A.MinusMinus -> expr builder (A.Crement(A.Pre,A.MinusMinus,s))
-                       )
-                     ); s'
+            A.Pre  -> expr builder (A.Assign(lv, (match op with
+              A.PlusPlus   -> A.AssnAdd
+            | A.MinusMinus -> A.AssnSub), (A.Primary (A.Literal 1))))
+          | A.Post ->
+              let lv' = lvalue builder lv in
+             ignore(expr builder (A.Crement(A.Pre, op, lv))); lv'
           )
-      | A.Assign (s, op, e) ->
+      | A.Assign (lv, op, e) ->
+          let lv'  = (A.Primary (A.Lvalue lv))
+          and lv'' = (match lv with
+            A.Id(s)    -> lookup s
+          | A.Arr(s,i) ->
+              let s' = lookup s
+              and i' = L.const_int i32_t i in
+              L.build_in_bounds_gep s' [|i'|] "tmp" builder) in
           let e' = (match op with
             A.AssnReg     -> expr builder e
-          | A.AssnAdd     -> expr builder (A.Binop((A.Id s), A.Add, e))
-          | A.AssnSub     -> expr builder (A.Binop((A.Id s), A.Sub, e))
-          | A.AssnMult    -> expr builder (A.Binop((A.Id s), A.Mult, e))
-          | A.AssnDiv     -> expr builder (A.Binop((A.Id s), A.Div, e))
-          | A.AssnMod     -> expr builder (A.Binop((A.Id s), A.Mod, e))
+          | A.AssnAdd     -> expr builder (A.Binop(lv', A.Add,  e))
+          | A.AssnSub     -> expr builder (A.Binop(lv', A.Sub,  e))
+          | A.AssnMult    -> expr builder (A.Binop(lv', A.Mult, e))
+          | A.AssnDiv     -> expr builder (A.Binop(lv', A.Div,  e))
+          | A.AssnMod     -> expr builder (A.Binop(lv', A.Mod,  e))
           ) in
-          ignore (L.build_store e' (lookup s) builder); e'
+          ignore (L.build_store e' lv'' builder); e'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder

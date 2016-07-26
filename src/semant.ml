@@ -7,7 +7,7 @@ Authors:  - Rui Gu,           rg2970
           - Suzanna Schmeelk, ss4648
 Purpose:  * Semantic checking for the SimpliCty compiler
           * Returns void if successful. Otherwise throws exception.
-Modified: 2016-07-24
+Modified: 2016-07-25
 *)
 
 open Ast
@@ -26,8 +26,9 @@ let check (globals, functions) =
   in
 
   (* Raise an exception if a given binding is to a void type *)
+  let second_4 (_, id, _, _) = id in
   let check_not_void exceptf = function
-      (Void, n) -> raise (Failure (exceptf n))
+      (Void, n, _, _) -> raise (Failure (exceptf n))
     | _ -> ()
   in
   
@@ -38,10 +39,8 @@ let check (globals, functions) =
   in
    
   (**** Checking Global Variables ****)
-
   List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals;
-   
-  report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals);
+  report_duplicate (fun n -> "duplicate global " ^ n) (List.map second_4 globals);
 
   (**** Checking Functions ****)
   if List.mem "putchar" (List.map (fun fd -> fd.fname) functions)
@@ -58,13 +57,13 @@ let check (globals, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.add "print"
-     { typ = Void; fname = "print"; formals = [(Int, "x")];
+     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
        locals = []; body = [] } (StringMap.singleton "printb"
-     { typ = Void; fname = "printb"; formals = [(Bool, "x")];
+     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, Primary(Literal(0)))];
        locals = []; body = [] })
   in
   let built_in_decls =  StringMap.add "putchar"
-     { typ = Void; fname = "putchar"; formals = [(Int, "x")];
+     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
        locals = []; body = [] } built_in_decls
   in 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
@@ -83,16 +82,16 @@ let check (globals, functions) =
       " in " ^ func.fname)) func.formals;
 
     report_duplicate (fun n -> "duplicate formal " ^ n ^ " in " ^ func.fname)
-      (List.map snd func.formals);
+      (List.map second_4 func.formals);
 
     List.iter (check_not_void (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname)) func.locals;
 
     report_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname)
-      (List.map snd func.locals);
+      (List.map second_4 func.locals);
 
     (* Type of each variable (global, formal, or local *)
-    let symbols = List.fold_left (fun m (t, n) -> StringMap.add n t m)
+    let symbols = List.fold_left (fun m (t, n, _ , _) -> StringMap.add n t m)
 	StringMap.empty (globals @ func.formals @ func.locals )
     in
 
@@ -100,47 +99,67 @@ let check (globals, functions) =
       try StringMap.find s symbols
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
-
+    
+    let lvalue = function
+        Id(s)    -> type_of_identifier s
+      | Arr(s,_) -> type_of_identifier s
+    in 
+    let primary = function
+        Literal _  -> Int
+      | BoolLit _  -> Bool
+      | Lvalue  lv -> lvalue lv
+    in
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
-	Literal _ -> Int
-      | BoolLit _ -> Bool
-      | Id s -> type_of_identifier s
-      | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
-	(match op with
-          Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
-	| Equal | Neq when t1 = t2 -> Bool
-	| Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
-	| And | Or when t1 = Bool && t2 = Bool -> Bool
-        | _ -> raise (Failure ("illegal binary operator " ^
-              string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-              string_of_typ t2 ^ " in " ^ string_of_expr e))
-        )
-      | Unop(op, e) as ex -> let t = expr e in
-	 (match op with
-	   Neg when t = Int -> Int
-	 | Not when t = Bool -> Bool
-         | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
-	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
-      | Crement(opDir, op, var) as ex -> let t = type_of_identifier var in
-        (match op with
-           _ when t = Int -> Int
-         | _ -> raise (Failure ("illegal " ^string_of_crementDir opDir^string_of_crement op^
-                                " " ^ string_of_typ t ^ " in " ^
-                                string_of_expr ex)) )
+        Primary p -> primary p
+      | Binop(e1, op, e2) as e ->
+          let t1 = expr e1
+          and t2 = expr e2 in
+	  (match op with
+            Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
+	  | Equal | Neq when t1 = t2                               -> Bool
+	  | Less | Leq | Greater | Geq when t1 = Int && t2 = Int   -> Bool
+	  | And | Or when t1 = Bool && t2 = Bool                   -> Bool
+          | _                                                      -> raise (Failure (
+              "illegal binary operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
+              string_of_typ t2 ^" in "^ string_of_expr e
+            ))
+          )
+      | Unop(op, e) as ex ->
+          let t = expr e in
+	  (match op with
+	    Neg when t = Int  -> Int
+	  | Not when t = Bool -> Bool
+          | _                 -> raise (Failure (
+              "illegal unary operator "^ string_of_uop op ^
+	  		   string_of_typ t ^" in "^ string_of_expr ex
+            ))
+          )
+      | Crement(opDir, op, lv) as ex ->
+          let t = lvalue lv in
+          (match op with
+            _ when t = Int -> Int
+          | _              -> raise (Failure (
+              "illegal "^ string_of_crementDir opDir ^ string_of_crement op ^
+              " "^ string_of_typ t ^" in "^ string_of_expr ex
+            ))
+          )
       | Noexpr -> Void
-      | Assign(var, op, e) as ex -> let lt = type_of_identifier var
-                                and rt = expr e in
-	(match op with _ ->
-        check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
-				     " = " ^ string_of_typ rt ^ " in " ^ 
-				     string_of_expr ex)))
+      | Assign(lv, op, e) as ex ->
+          let lt = lvalue lv
+          and rt = expr e in
+	  (match op with
+            _ -> check_assign lt rt (Failure (
+              "illegal assignment "^ string_of_typ lt ^" = "^ string_of_typ rt ^
+              " in "^ string_of_expr ex
+            ))
+          )
       | Call(fname, actuals) as call -> let fd = function_decl fname in
          if List.length actuals != List.length fd.formals then
            raise (Failure ("expecting " ^ string_of_int
              (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
          else
-           List.iter2 (fun (ft, _) e -> let et = expr e in
+           List.iter2 (fun (ft, _, _, _) e -> let et = expr e in
               ignore (check_assign ft et
                 (Failure ("illegal actual argument found " ^ string_of_typ et ^
                 " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e))))
