@@ -26,8 +26,9 @@ let check (globals, functions) =
   in
 
   (* Raise an exception if a given binding is to a void type *)
+  let second_4 (_, id, _, _) = id in
   let check_not_void exceptf = function
-      (Void, n) -> raise (Failure (exceptf n))
+      (Void, n, _, _) -> raise (Failure (exceptf n))
     | _ -> ()
   in
   
@@ -38,10 +39,8 @@ let check (globals, functions) =
   in
    
   (**** Checking Global Variables ****)
-
   List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals;
-   
-  report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals);
+  report_duplicate (fun n -> "duplicate global " ^ n) (List.map second_4 globals);
 
   (**** Checking Functions ****)
   if List.mem "putchar" (List.map (fun fd -> fd.fname) functions)
@@ -58,13 +57,13 @@ let check (globals, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.add "print"
-     { typ = Void; fname = "print"; formals = [(Int, "x")];
+     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
        locals = []; body = [] } (StringMap.singleton "printb"
-     { typ = Void; fname = "printb"; formals = [(Bool, "x")];
+     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, Primary(Literal(0)))];
        locals = []; body = [] })
   in
   let built_in_decls =  StringMap.add "putchar"
-     { typ = Void; fname = "putchar"; formals = [(Int, "x")];
+     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
        locals = []; body = [] } built_in_decls
   in 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
@@ -83,16 +82,16 @@ let check (globals, functions) =
       " in " ^ func.fname)) func.formals;
 
     report_duplicate (fun n -> "duplicate formal " ^ n ^ " in " ^ func.fname)
-      (List.map snd func.formals);
+      (List.map second_4 func.formals);
 
     List.iter (check_not_void (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname)) func.locals;
 
     report_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname)
-      (List.map snd func.locals);
+      (List.map second_4 func.locals);
 
     (* Type of each variable (global, formal, or local *)
-    let symbols = List.fold_left (fun m (t, n) -> StringMap.add n t m)
+    let symbols = List.fold_left (fun m (t, n, _ , _) -> StringMap.add n t m)
 	StringMap.empty (globals @ func.formals @ func.locals )
     in
 
@@ -160,7 +159,7 @@ let check (globals, functions) =
            raise (Failure ("expecting " ^ string_of_int
              (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
          else
-           List.iter2 (fun (ft, _) e -> let et = expr e in
+           List.iter2 (fun (ft, _, _, _) e -> let et = expr e in
               ignore (check_assign ft et
                 (Failure ("illegal actual argument found " ^ string_of_typ et ^
                 " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e))))

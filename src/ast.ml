@@ -25,8 +25,6 @@ type typ = Int | Bool | Void
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
-type bind = typ * string
-
 type lvalue = 
     Id of string
   | Arr of string * int
@@ -44,6 +42,8 @@ type expr =
   | Assign of lvalue * assn * expr
   | Call of string * expr list
   | Noexpr
+
+type bind = typ * string * decl * expr
 
 type stmt =
     Block of stmt list
@@ -146,11 +146,13 @@ let string_of_typ = function
   | Bool -> "bool"
   | Void -> "void"
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id, _ , _) = string_of_typ t ^ " " ^ id ^ ";\n"
+
+let second_4 (_, id, _, _) = id 
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map second_4 fdecl.formals) ^
   ")\n{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^

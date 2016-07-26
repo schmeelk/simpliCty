@@ -64,9 +64,12 @@ parameter_list_opt:
   | parameter_list   { List.rev $1 }
 
 parameter_list:
-    typ_specifier ID                      { [($1,$2)] }
-  | typ_specifier LBRACKET RBRACKET ID    { [($1, $4)] }
-  | parameter_list COMMA typ_specifier ID { ($3,$4) :: $1 }
+  | parameter { [$1] }
+  | parameter_list COMMA  parameter { $3 :: $1 }
+  
+parameter:
+    typ_specifier ID { ($1,$2, Primitive, Primary(Literal(0))) }
+  | typ_specifier LBRACKET expression RBRACKET ID    { ($1, $5, Array, $3) }
 
 typ_specifier:
     INT  { Int }
@@ -78,8 +81,8 @@ declaration_list:
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-    typ_specifier ID SEMI                              { ($1, $2) }
-  | typ_specifier LBRACKET expression RBRACKET ID SEMI { ($1, $5) }
+    typ_specifier ID SEMI                              { ($1, $2, Primitive, Primary(Literal(0))) }
+  | typ_specifier LBRACKET expression RBRACKET ID SEMI { ($1, $5, Array, $3) }
 
 statement_list:
     /* nothing */  { [] }
