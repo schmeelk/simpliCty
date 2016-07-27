@@ -12,6 +12,8 @@ Modified: 2016-07-25
 
 type decl = Primitive | Array (* | Struct *)
 
+type decl_assn = DeclAssnYes | DeclAssnNo
+
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
 
@@ -43,7 +45,9 @@ type expr =
   | Call of string * expr list
   | Noexpr
 
-type bind = typ * string * decl * expr
+type parameter = typ * string * decl * expr
+
+type declaration = typ * string * decl * expr * decl_assn * (primary list)
 
 type stmt =
     Block of stmt list
@@ -56,12 +60,12 @@ type stmt =
 type func_decl = {
     typ : typ;
     fname : string;
-    formals : bind list;
-    locals : bind list;
+    formals : parameter list;
+    locals : declaration list;
     body : stmt list;
   }
 
-type program = bind list * func_decl list
+type program = declaration list * func_decl list
 
 (* Pretty-printing functions *)
 
@@ -146,13 +150,14 @@ let string_of_typ = function
   | Bool -> "bool"
   | Void -> "void"
 
-let string_of_vdecl (t, id, _ , _) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id, _ , _, _, _) = string_of_typ t ^ " " ^ id ^ ";\n"
 
-let second_4 (_, id, _, _) = id 
+let snd_of_four (_,id,_,_) = id
+let snd_of_six (_, id, _, _, _, _) = id 
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map second_4 fdecl.formals) ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd_of_four fdecl.formals) ^
   ")\n{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^

@@ -26,9 +26,14 @@ let check (globals, functions) =
   in
 
   (* Raise an exception if a given binding is to a void type *)
-  let second_4 (_, id, _, _) = id in
-  let check_not_void exceptf = function
+  let snd_of_four (_,id,_,_) = id in
+  let snd_of_six (_, id, _, _, _, _) = id in
+  let check_not_void_four exceptf = function
       (Void, n, _, _) -> raise (Failure (exceptf n))
+    | _ -> ()
+  in
+  let check_not_void_six exceptf = function
+      (Void, n, _, _, _, _) -> raise (Failure (exceptf n))
     | _ -> ()
   in
   
@@ -39,8 +44,8 @@ let check (globals, functions) =
   in
    
   (**** Checking Global Variables ****)
-  List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals;
-  report_duplicate (fun n -> "duplicate global " ^ n) (List.map second_4 globals);
+  List.iter (check_not_void_six (fun n -> "illegal void global " ^ n)) globals;
+  report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd_of_six globals);
 
   (**** Checking Functions ****)
   if List.mem "putchar" (List.map (fun fd -> fd.fname) functions)
@@ -78,21 +83,27 @@ let check (globals, functions) =
 
   let check_function func =
 
-    List.iter (check_not_void (fun n -> "illegal void formal " ^ n ^
+    List.iter (check_not_void_four (fun n -> "illegal void formal " ^ n ^
       " in " ^ func.fname)) func.formals;
 
     report_duplicate (fun n -> "duplicate formal " ^ n ^ " in " ^ func.fname)
-      (List.map second_4 func.formals);
+      (List.map snd_of_four func.formals);
 
-    List.iter (check_not_void (fun n -> "illegal void local " ^ n ^
+    List.iter (check_not_void_six (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname)) func.locals;
 
     report_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname)
-      (List.map second_4 func.locals);
+      (List.map snd_of_six func.locals);
 
     (* Type of each variable (global, formal, or local *)
-    let symbols = List.fold_left (fun m (t, n, _ , _) -> StringMap.add n t m)
-	StringMap.empty (globals @ func.formals @ func.locals )
+    let symbols = List.fold_left (fun m (t, n, _, _, _, _) -> StringMap.add n t m)
+        StringMap.empty globals
+    in
+    let symbols = List.fold_left (fun m (t, n, _, _) -> StringMap.add n t m)
+	symbols func.formals
+    in
+    let symbols = List.fold_left (fun m (t, n, _, _, _, _) -> StringMap.add n t m)
+        symbols func.locals
     in
 
     let type_of_identifier s =
