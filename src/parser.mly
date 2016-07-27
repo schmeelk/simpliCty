@@ -138,6 +138,7 @@ expression:
 
 primary:
     LITERAL { Literal($1) }
+  | CHARLIT { CharLit($1) }
   | TRUE    { BoolLit(true) }
   | FALSE   { BoolLit(false) }
   | lvalue  { Lvalue($1) }
