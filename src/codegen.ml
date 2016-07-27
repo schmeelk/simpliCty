@@ -92,10 +92,20 @@ let translate (globals, functions) =
 	    StringMap.add name local m
         ) in
 
-      let add_local m (typ, name, decl, size,_,_) =
+      let decl_assign (typ', is_assign, init_val) =
+        L.const_int typ' (match is_assign with
+          A.DeclAssnYes -> (match init_val with
+            [A.Literal(i)] -> i
+          | [A.BoolLit(b)] -> if b then 1 else 0
+          | _              -> 0)
+        | _             -> 0)
+      in
+      let add_local m (typ, name, decl, size, is_assign, init_val) =
         (match decl with
 	  A.Primitive ->
-            let local_var = L.build_alloca (ltype_of_typ typ) name builder in
+            let typ' = ltype_of_typ typ in
+            let local_var = L.build_alloca typ' name builder in
+            ignore(L.build_store (decl_assign (typ', is_assign, init_val)) local_var builder); 
             StringMap.add name local_var m
 	| A.Array ->
             let size_s = (match size with
