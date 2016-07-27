@@ -150,7 +150,6 @@ let string_of_typ = function
   | Char -> "char"
   | Bool -> "bool"
   | Void -> "void"
-  | Char -> "char"
 
 let string_of_vdecl (t, id, _ , _) = string_of_typ t ^ " " ^ id ^ ";\n"
 
