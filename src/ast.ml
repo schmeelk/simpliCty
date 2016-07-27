@@ -21,7 +21,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void
+type typ = Int | Bool | Void | Char
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
