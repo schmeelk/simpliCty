@@ -19,7 +19,7 @@ rule token = parse
 | '{'      { LBRACE }
 | '}'      { RBRACE }
 | '['      { LBRACKET }
-| ['\'' ''']     { SINGLEQT }
+| '''      { SINGLEQT }
 | ']'      { RBRACKET }
 | ';'      { SEMI }
 | ','      { COMMA }
