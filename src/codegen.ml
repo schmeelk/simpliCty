@@ -100,19 +100,34 @@ let translate (globals, functions) =
           | _              -> 0)
         | _             -> 0)
       in
+      let store_in_array (addr, typ', is_assign, init_val, index) =
+        let i = L.const_int i32_t index
+        and value = L.const_int typ' (match is_assign with
+          A.DeclAssnYes -> (match init_val with
+            A.Literal(i) -> i
+          | A.BoolLit(b) -> if b then 1 else 0
+          | _            -> 0)
+        | _             -> 0)
+        in
+        let addr' = L.build_in_bounds_gep addr [|i|] "tmp" builder in
+        ignore(L.build_store value addr' builder); index+1
+      in
       let add_local m (typ, name, decl, size, is_assign, init_val) =
+        let typ' = ltype_of_typ typ in
         (match decl with
 	  A.Primitive ->
-            let typ' = ltype_of_typ typ in
             let local_var = L.build_alloca typ' name builder in
-            ignore(L.build_store (decl_assign (typ', is_assign, init_val)) local_var builder); 
-            StringMap.add name local_var m
+            ignore(
+              L.build_store (decl_assign (typ', is_assign, init_val)) local_var builder
+            ); StringMap.add name local_var m
 	| A.Array ->
             let size_s = (match size with
               A.Primary(A.Literal(s)) -> L.const_int i32_t s
             | _ -> L.const_int i32_t 0) in
-            let local_var = L.build_array_alloca (ltype_of_typ typ) size_s name builder in
-            StringMap.add name local_var m  
+            let local_var = L.build_array_alloca (ltype_of_typ typ) size_s name builder in 
+            ignore(
+              List.fold_left (fun i s -> store_in_array (local_var, typ', is_assign, s, i)) 0 init_val
+            ); StringMap.add name local_var m  
         ) in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
           (Array.to_list (L.params the_function)) in

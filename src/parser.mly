@@ -83,7 +83,15 @@ declaration_list:
 declaration:
     typ_specifier ID SEMI                              { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnNo,  []) }
   | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnYes, [$4]) }
-  | typ_specifier LBRACKET expression RBRACKET ID SEMI { ($1, $5, Array,     $3                 , DeclAssnNo,  []) }
+  | typ_specifier LBRACKET expression RBRACKET ID SEMI                 { ($1, $5, Array, $3, DeclAssnNo,  []) }
+  | typ_specifier LBRACKET expression RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array, $3, DeclAssnYes, $7) }
+
+decl_assign_arr:
+    LBRACKET arr_assign RBRACKET { List.rev $2 }
+
+arr_assign:
+    primary                 { [$1] }
+  | arr_assign SEMI primary { $3 :: $1 }
 
 statement_list:
     /* nothing */  { [] }
