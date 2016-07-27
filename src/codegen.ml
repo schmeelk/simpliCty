@@ -39,7 +39,7 @@ let translate (globals, functions) =
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
-    let global_var m (typ, name, _, _) =
+    let global_var m (typ, name, _, _, _, _) =
           let init = L.const_int (ltype_of_typ typ) 0
           in StringMap.add name (L.define_global name init the_module) m
       
@@ -85,7 +85,7 @@ let translate (globals, functions) =
 	    StringMap.add name local m
         ) in
 
-      let add_local m (typ, name, decl, size) =
+      let add_local m (typ, name, decl, size,_,_) =
         (match decl with
 	  A.Primitive ->
             let local_var = L.build_alloca (ltype_of_typ typ) name builder in
@@ -108,7 +108,7 @@ let translate (globals, functions) =
     in
     (*Construct code for lvalues; return value pointed to*)
     let lvalue builder = function
-      A.Id(s)  -> L.build_load (lookup s) s builder
+      A.Id(s)    -> L.build_load (lookup s) s builder
     | A.Arr(s,i) ->
         let s' = lookup s
         and i' = L.const_int i32_t i in
