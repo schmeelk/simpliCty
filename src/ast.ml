@@ -9,6 +9,7 @@ Purpose:  * Generate abstract syntax tree
           * Functions for printing the AST
 Modified: 2016-07-25
 *)
+module C=Char
 
 type decl = Primitive | Array (* | Struct *)
 
@@ -23,7 +24,7 @@ type crementDir = Pre | Post
 
 type typ = Int | Bool | Void | Char
 
-type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
+type assn = AssnChar | AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
 type lvalue = 
     Id of string
@@ -31,6 +32,7 @@ type lvalue =
 
 type primary =
     Literal of int
+  | CharLit of char 
   | BoolLit of bool
   | Lvalue of lvalue
 
@@ -99,6 +101,7 @@ let string_of_crementDir = function
 
 let string_of_assn = function
     AssnReg  -> "="
+  | AssnChar -> "="
   | AssnAdd  -> "+="
   | AssnSub  -> "-="
   | AssnMult -> "*="
@@ -111,6 +114,7 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
+  | CharLit(l)     -> string_of_int (C.code l )
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
 
@@ -143,6 +147,7 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
     Int  -> "int"
+  | Char -> "char"
   | Bool -> "bool"
   | Void -> "void"
 

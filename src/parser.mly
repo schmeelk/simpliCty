@@ -22,6 +22,7 @@ open Ast
 %token PRINT
 %token <int> LITERAL
 %token <string> ID
+%token <char> CHARLIT
 %token EOF
 
 %nonassoc NOELSE
@@ -127,11 +128,12 @@ expression:
   | lvalue PLUSPLUS              { Crement(Post, PlusPlus,   $1) }
   | lvalue MINUSMINUS            { Crement(Post, MinusMinus, $1) }
   | lvalue ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
+  | lvalue ASSIGNREG SINGLEQT CHARLIT SINGLEQT  { Assign($1, AssnChar,  Primary(CharLit($4))) }
   | lvalue ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
   | lvalue ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
   | lvalue ASSIGNMULT expression { Assign($1, AssnMult, $3) }
   | lvalue ASSIGNDIV expression  { Assign($1, AssnDiv,  $3) }
-  | lvalue ASSIGNMOD expression  { Assign($1, AssnMod,  $3) }
+  | lvalue ASSIGNMOD  expression  { Assign($1, AssnMod,  $3) }
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
