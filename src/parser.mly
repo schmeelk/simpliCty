@@ -69,8 +69,8 @@ parameter_list:
   | parameter_list COMMA  parameter { $3 :: $1 }
   
 parameter:
-    typ_specifier ID { ($1,$2, Primitive, Primary(Literal(0))) }
-  | typ_specifier LBRACKET expression RBRACKET ID    { ($1, $5, Array, $3) }
+    typ_specifier ID                              { ($1,$2, Primitive, Primary(Literal(0))) }
+  | typ_specifier LBRACKET expression RBRACKET ID { ($1,$5, Array,     $3) }
 
 typ_specifier:
     INT  { Int }
@@ -83,8 +83,9 @@ declaration_list:
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-    typ_specifier ID SEMI                              { ($1, $2, Primitive, Primary(Literal(0))) }
-  | typ_specifier LBRACKET expression RBRACKET ID SEMI { ($1, $5, Array, $3) }
+    typ_specifier ID SEMI                              { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnNo,  []) }
+  | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnYes, [$4]) }
+  | typ_specifier LBRACKET expression RBRACKET ID SEMI { ($1, $5, Array,     $3                 , DeclAssnNo,  []) }
 
 statement_list:
     /* nothing */  { [] }
