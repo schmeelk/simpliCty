@@ -1,0 +1,8 @@
+int main () {
+   int x;
+   char [1] n; 
+   x = 999999;
+   n[0] = 4 ;
+   putchar (n[0]);
+   return 0;
+}
