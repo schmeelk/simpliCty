@@ -128,7 +128,7 @@ expression:
   | lvalue PLUSPLUS              { Crement(Post, PlusPlus,   $1) }
   | lvalue MINUSMINUS            { Crement(Post, MinusMinus, $1) }
   | lvalue ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
-  | lvalue ASSIGNREG SINGLEQT CHARLIT SINGLEQT  { Assign($1, AssnChar,  Primary(CharLit($4))) }
+  | lvalue ASSIGNREG SINGLEQT expression SINGLEQT  { Assign($1, AssnReg, $4) }
   | lvalue ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
   | lvalue ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
   | lvalue ASSIGNMULT expression { Assign($1, AssnMult, $3) }

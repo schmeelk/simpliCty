@@ -177,7 +177,6 @@ let translate (globals, functions) =
               L.build_in_bounds_gep s' [|i'|] "tmp" builder) in
           let e' = (match op with
             A.AssnReg     -> expr builder e
-          | A.AssnChar    -> expr builder e 
           | A.AssnAdd     -> expr builder (A.Binop(lv', A.Add,  e))
           | A.AssnSub     -> expr builder (A.Binop(lv', A.Sub,  e))
           | A.AssnMult    -> expr builder (A.Binop(lv', A.Mult, e))
