@@ -22,7 +22,6 @@ http://llvm.moe/ocaml/
 
 module L = Llvm
 module A = Ast
-module C = Char
 module StringMap = Map.Make(String)
 
 let translate (globals, functions) =
