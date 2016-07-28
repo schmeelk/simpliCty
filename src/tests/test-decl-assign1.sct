@@ -1,9 +1,8 @@
 int main()
 {
 	int a;
-	a = 0;
+        int b = 37;
 	print (a);
-	print (a++);
-	print (a);
+        print (b);
 	return 0;
 }
