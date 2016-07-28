@@ -1,0 +1,17 @@
+int main()
+{
+	int[12] str = [72;69;76;76;79;32;87;79;82;76;68;10];
+	putchar(str[0]);
+	putchar(str[1]);
+	putchar(str[2]);
+	putchar(str[3]);
+	putchar(str[4]);
+	putchar(str[5]);
+	putchar(str[6]);
+	putchar(str[7]);
+	putchar(str[8]);
+	putchar(str[9]);
+	putchar(str[10]);
+	putchar(str[11]);
+	return 0;
+}
