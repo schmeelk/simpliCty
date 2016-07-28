@@ -89,11 +89,11 @@ declaration:
   | typ_specifier LBRACKET expression RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array, $3, DeclAssnYes, $7) }
 
 decl_assign_arr:
-    LBRACKET arr_assign RBRACKET { List.rev $2 }
+    LBRACE arr_assign RBRACE { List.rev $2 }
 
 arr_assign:
     primary                 { [$1] }
-  | arr_assign SEMI primary { $3 :: $1 }
+  | arr_assign COMMA primary { $3 :: $1 }
 
 statement_list:
     /* nothing */  { [] }
