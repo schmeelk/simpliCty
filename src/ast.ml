@@ -10,6 +10,8 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
+module C=Char
+
 type decl = Primitive | Array (* | Struct *)
 
 type decl_assn = DeclAssnYes | DeclAssnNo
