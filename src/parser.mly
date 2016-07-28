@@ -128,7 +128,6 @@ expression:
   | lvalue PLUSPLUS              { Crement(Post, PlusPlus,   $1) }
   | lvalue MINUSMINUS            { Crement(Post, MinusMinus, $1) }
   | lvalue ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
-  | lvalue ASSIGNREG SINGLEQT expression SINGLEQT  { Assign($1, AssnReg, $4) }
   | lvalue ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
   | lvalue ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
   | lvalue ASSIGNMULT expression { Assign($1, AssnMult, $3) }
@@ -138,7 +137,7 @@ expression:
 
 primary:
     LITERAL { Literal($1) }
-  | CHARLIT { CharLit($1) }
+  | charlit { CharLit($1) }
   | TRUE    { BoolLit(true) }
   | FALSE   { BoolLit(false) }
   | lvalue  { Lvalue($1) }
@@ -147,6 +146,8 @@ lvalue:
     ID                           { Id($1) }
   | ID LBRACKET LITERAL RBRACKET { Arr($1,$3) }
 
+charlit:
+   CHARLIT { CLit($1) }
 
 expression_list_opt:
     /* nothing */ { [] }
