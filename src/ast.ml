@@ -25,13 +25,16 @@ type typ = Int | Bool | Void | Char
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
+type charlit =
+    CLit of char
+
 type lvalue = 
     Id of string
   | Arr of string * int
 
 type primary =
     Literal of int
-  | CharLit of char 
+  | CharLit of charlit
   | BoolLit of bool
   | Lvalue of lvalue
 
@@ -112,7 +115,7 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
-  | CharLit(l)     -> string_of_int (int_of_char(l) )
+  | CharLit(c)     -> "null"
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
 

@@ -1,0 +1,13 @@
+int main()
+{
+  int a;
+  int b;
+  int c;
+  a = 'c';
+  b = 'x';
+  c = 9;
+  putchar( a );
+  putchar( b );
+  putchar( c );
+  return 0;
+}
