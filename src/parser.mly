@@ -148,7 +148,7 @@ lvalue:
   | ID LBRACKET LITERAL RBRACKET { Arr($1,$3) }
 
 charlit:
-    CHARLIT { CLit($1) }
+    CHARLIT { (CLit($1)) }
 
 expression_list_opt:
     /* nothing */ { [] }

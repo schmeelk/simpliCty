@@ -109,13 +109,16 @@ let string_of_assn = function
   | AssnDiv  -> "/="
   | AssnMod  -> "%="
 
+let string_of_char = function
+  | CLit(c) -> string_of_int(int_of_char c)
+
 let string_of_lvalue = function
     Id(s)    -> s
   | Arr(s,_) -> s
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
-  | CharLit(c)     -> "null"
+  | CharLit(c)     -> string_of_char c
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
 
