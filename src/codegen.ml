@@ -22,14 +22,12 @@ http://llvm.moe/ocaml/
 
 module L = Llvm
 module A = Ast
-module C = Char
 module StringMap = Map.Make(String)
 
 let translate (globals, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
   and i32_t  = L.i32_type  context
-  and i8_t   = L.i8_type   context
   and i1_t   = L.i1_type   context
   and void_t = L.void_type context in
 
@@ -47,10 +45,6 @@ let translate (globals, functions) =
       
       in
     List.fold_left global_var StringMap.empty globals in
-
-  (* Declare printf(), which the print built-in function will call *)
-  let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
-  let printf_func = L.declare_function "printf" printf_t the_module in
 
   (* Declare putchar(), which the putchar built-in function will call *)
   let putchar_t = L.function_type i32_t [| i32_t |] in
@@ -71,8 +65,6 @@ let translate (globals, functions) =
     let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
-    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in    
-    
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals" map *)
@@ -123,10 +115,12 @@ let translate (globals, functions) =
         let addr = L.build_in_bounds_gep s' [|i'|] "tmp" builder in
         L.build_load addr s builder
     in
+    let charlit  = function 
+      A.CLit(c) -> L.const_int i32_t (int_of_char c) in (* (String.get c 0)) a*)
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
       A.Literal i -> L.const_int i32_t i
-    | A.CharLit c -> L.const_int i32_t (C.code c) (* (String.get c 0)) a*)
+    | A.CharLit c -> charlit c
     | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
     | A.Lvalue lv -> lvalue builder lv
     in
@@ -184,9 +178,6 @@ let translate (globals, functions) =
           | A.AssnMod     -> expr builder (A.Binop(lv', A.Mod,  e))
           ) in
           ignore (L.build_store e' lv'' builder); e'
-      | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
-	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
-	    "printf" builder
       | A.Call ("putchar", [e]) ->
       L.build_call putchar_func [| (expr builder e) |]
         "putchar" builder
