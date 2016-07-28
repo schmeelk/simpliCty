@@ -60,7 +60,7 @@ let translate (globals, functions) =
     let addr' = L.build_in_bounds_gep addr [|i|] "tmp" builder in
     L.build_store v' addr' builder
   in
-   
+  
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
     let global_var m (typ, name, _, _, _, _) =
