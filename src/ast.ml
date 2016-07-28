@@ -10,6 +10,8 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
+module C=Char
+
 type decl = Primitive | Array (* | Struct *)
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
@@ -115,7 +117,7 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
-  | CharLit(l)     -> "charlit" 
+  | CharLit(CLit(l))     -> (C.escaped l)
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
 
