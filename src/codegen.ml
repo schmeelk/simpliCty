@@ -43,7 +43,25 @@ let translate (globals, functions) =
     | A.BoolLit(b) -> if b then 1 else 0
     | _            -> 0
   in
-  
+ 
+  (* Store memory *) 
+  let store_primitive addr typ' assign value builder = 
+    L.build_store (L.const_int typ' (match assign with
+      A.DeclAssnYes -> (match value with
+        [p] -> primary_decompose p
+      | _   -> 0)
+    | _             -> 0)
+    ) addr builder
+  and store_array_idx addr index typ' assign value builder = 
+    let i  = L.const_int i32_t index
+    and v' = L.const_int typ' (match assign with
+      A.DeclAssnYes -> primary_decompose value
+    | _             -> 0)
+    in
+    let addr' = L.build_in_bounds_gep addr [|i|] "tmp" builder in
+    L.build_store v' addr' builder
+  in
+   
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
     let global_var m (typ, name, _, _, _, _) =
@@ -97,25 +115,6 @@ let translate (globals, functions) =
 	    ignore (L.build_store p local builder);
 	    StringMap.add name local m
         ) in
-
-      let assign_primitive addr typ' assign value =
-        L.build_store (L.const_int typ' (match assign with
-          A.DeclAssnYes -> (match value with
-            [p] -> primary_decompose p
-          | _   -> 0)
-        | _             -> 0)
-        ) addr builder
-      and assign_array addr typ' assign values = 
-        List.fold_left (fun index _vals ->
-          (let i    = L.const_int i32_t index
-          and value = L.const_int typ' (match assign with
-            A.DeclAssnYes -> primary_decompose _vals
-          | _             -> 0)
-          in
-          let addr' = L.build_in_bounds_gep addr [|i|] "tmp" builder in
-          ignore(L.build_store value addr' builder); index+1)
-      ) 0 values
-      in
       let add_local m (typ, name, decl, size, assign, values) =
         let typ' = ltype_of_typ typ in
         let addr = (match decl with
@@ -125,8 +124,11 @@ let translate (globals, functions) =
           | _                       -> L.const_int i32_t 0)
         ) name builder in
         (match decl with
-          A.Primitive -> ignore(assign_primitive addr typ' assign values)
-        | A.Array     -> ignore(assign_array     addr typ' assign values)
+          A.Primitive ->
+            ignore(store_primitive addr typ' assign values builder)
+        | A.Array     ->
+            ignore(List.fold_left (fun index _vals ->
+            ignore(store_array_idx addr index typ' assign _vals builder);index+1) 0 values)
         ); StringMap.add name addr m
       in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
@@ -191,22 +193,26 @@ let translate (globals, functions) =
              ignore(expr builder (A.Crement(A.Pre, op, lv))); lv'
           )
       | A.Assign (lv, op, e) ->
-          let lv'  = (A.Primary (A.Lvalue lv))
-          and lv'' = (match lv with
+          let value = (A.Primary (A.Lvalue lv))
+          and addr  = (match lv with
             A.Id(s)    -> lookup s
           | A.Arr(s,i) ->
               let s' = lookup s
               and i' = L.const_int i32_t i in
               L.build_in_bounds_gep s' [|i'|] "tmp" builder) in
-          let e' = (match op with
+          let eval = (match op with
             A.AssnReg     -> expr builder e
-          | A.AssnAdd     -> expr builder (A.Binop(lv', A.Add,  e))
-          | A.AssnSub     -> expr builder (A.Binop(lv', A.Sub,  e))
-          | A.AssnMult    -> expr builder (A.Binop(lv', A.Mult, e))
-          | A.AssnDiv     -> expr builder (A.Binop(lv', A.Div,  e))
-          | A.AssnMod     -> expr builder (A.Binop(lv', A.Mod,  e))
+          | A.AssnAdd     -> expr builder (A.Binop(value, A.Add,  e))
+          | A.AssnSub     -> expr builder (A.Binop(value, A.Sub,  e))
+          | A.AssnMult    -> expr builder (A.Binop(value, A.Mult, e))
+          | A.AssnDiv     -> expr builder (A.Binop(value, A.Div,  e))
+          | A.AssnMod     -> expr builder (A.Binop(value, A.Mod,  e))
           ) in
-          ignore (L.build_store e' lv'' builder); e'
+          (*ignore ((match lv with
+            A.Id(s)    -> store_primitive (lookup s) i32_t A.DeclAssnYes [A.Literal(eval)] builder
+          | A.Arr(s,i) -> store_array_idx (lookup s) i32_t i A.DeclAssnYes [A.Literal(eval)] builder 
+          )); eval*)
+          ignore (L.build_store eval addr builder); eval
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
