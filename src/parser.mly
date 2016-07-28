@@ -13,15 +13,16 @@ Modified: 2016-07-25
 open Ast
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT
 %token PLUS MINUS TIMES DIVIDE MODULO
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID
+%token RETURN IF ELSE FOR WHILE INT BOOL VOID CHAR
 %token PRINT
 %token <int> LITERAL
 %token <string> ID
+%token <char> CHARLIT
 %token EOF
 
 %nonassoc NOELSE
@@ -73,6 +74,7 @@ parameter:
 
 typ_specifier:
     INT  { Int }
+  | CHAR { Char }
   | BOOL { Bool }
   | VOID { Void }
 
@@ -126,15 +128,17 @@ expression:
   | lvalue PLUSPLUS              { Crement(Post, PlusPlus,   $1) }
   | lvalue MINUSMINUS            { Crement(Post, MinusMinus, $1) }
   | lvalue ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
+  | lvalue ASSIGNREG SINGLEQT expression SINGLEQT  { Assign($1, AssnReg, $4) }
   | lvalue ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
   | lvalue ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
   | lvalue ASSIGNMULT expression { Assign($1, AssnMult, $3) }
   | lvalue ASSIGNDIV expression  { Assign($1, AssnDiv,  $3) }
-  | lvalue ASSIGNMOD expression  { Assign($1, AssnMod,  $3) }
+  | lvalue ASSIGNMOD  expression  { Assign($1, AssnMod,  $3) }
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
     LITERAL { Literal($1) }
+  | CHARLIT { CharLit($1) }
   | TRUE    { BoolLit(true) }
   | FALSE   { BoolLit(false) }
   | lvalue  { Lvalue($1) }

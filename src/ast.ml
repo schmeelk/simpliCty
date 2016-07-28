@@ -21,7 +21,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void
+type typ = Int | Bool | Void | Char
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -31,6 +31,7 @@ type lvalue =
 
 type primary =
     Literal of int
+  | CharLit of char 
   | BoolLit of bool
   | Lvalue of lvalue
 
@@ -111,6 +112,7 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
+  | CharLit(l)     -> string_of_int (int_of_char(l) )
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
 
@@ -143,6 +145,7 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
     Int  -> "int"
+  | Char -> "char"
   | Bool -> "bool"
   | Void -> "void"
 

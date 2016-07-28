@@ -22,7 +22,7 @@ http://llvm.moe/ocaml/
 
 module L = Llvm
 module A = Ast
-
+module C = Char
 module StringMap = Map.Make(String)
 
 let translate (globals, functions) =
@@ -35,6 +35,7 @@ let translate (globals, functions) =
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.Char -> i32_t
     | A.Bool -> i1_t
     | A.Void -> void_t in
 
@@ -125,6 +126,7 @@ let translate (globals, functions) =
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
       A.Literal i -> L.const_int i32_t i
+    | A.CharLit c -> L.const_int i32_t (C.code c) (* (String.get c 0)) a*)
     | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
     | A.Lvalue lv -> lvalue builder lv
     in

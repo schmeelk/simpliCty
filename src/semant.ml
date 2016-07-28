@@ -107,6 +107,7 @@ let check (globals, functions) =
     let primary = function
         Literal _  -> Int
       | BoolLit _  -> Bool
+      | CharLit _  -> Char
       | Lvalue  lv -> lvalue lv
     in
     (* Return the type of an expression or throw an exception *)

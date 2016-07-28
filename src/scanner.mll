@@ -19,6 +19,7 @@ rule token = parse
 | '{'      { LBRACE }
 | '}'      { RBRACE }
 | '['      { LBRACKET }
+| '''      { SINGLEQT }
 | ']'      { RBRACKET }
 | ';'      { SEMI }
 | ','      { COMMA }
@@ -50,6 +51,7 @@ rule token = parse
 | "while"  { WHILE }
 | "return" { RETURN }
 | "int"    { INT }
+| "char"   { CHAR }
 | "bool"   { BOOL }
 | "void"   { VOID }
 | "true"   { TRUE }
