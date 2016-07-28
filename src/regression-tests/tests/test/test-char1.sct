@@ -1,6 +1,0 @@
-int main()
-{
-  char a;
-  a = 'c';
-  return 0;
-}
