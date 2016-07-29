@@ -257,7 +257,7 @@ let translate (globals, functions) =
 	  let body_bb = L.append_block context "while_body" the_function in
 	  let merge_bb = L.append_block context "while_merge_block" the_function in
 
-	  add_terminal (stmt ((L.builder_at_end context body_bb) (*(L.builder_at_end context pred_break) (L.builder_at_end context merge_bb*) ) body)
+	  add_terminal (stmt ((L.builder_at_end context body_bb) (*(L.builder_at_end context merge_bb) (L.builder_at_end context pred_bb*) ) body)
 	    (L.build_br pred_bb);
 
 	  let pred_builder = L.builder_at_end context pred_bb in
