@@ -23,7 +23,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void | Char
+type typ = Int | Bool | Void | Char | String
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -33,6 +33,7 @@ type lvalue =
 
 type primary =
     Literal of int
+  | StrLit of string 
   | CharLit of char
   | BoolLit of bool
   | Lvalue of lvalue
@@ -48,7 +49,14 @@ type expr =
 
 type parameter = typ * string * decl * expr
 
-type declaration = typ * string * decl * expr * decl_assn * (primary list)
+type plaindec = typ * string * decl * expr * decl_assn * (primary list)
+
+type decinit = typ * string * decl * int * decl_assn * (primary list)
+
+type declaration = 
+    PlainDec of plaindec 
+  | DecInit of decinit 
+
 
 type stmt =
     Block of stmt list
@@ -118,6 +126,7 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
+  | StrLit(s)   -> s 
   | CharLit(c)     -> string_of_int (int_of_char c)
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
@@ -154,6 +163,7 @@ let rec string_of_stmt = function
 let string_of_typ = function
     Int  -> "int"
   | Char -> "char"
+  | String -> "string"
   | Bool -> "bool"
   | Void -> "void"
 
@@ -166,7 +176,7 @@ let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
   fdecl.fname ^ "(" ^ String.concat ", " (List.map snd_of_four fdecl.formals) ^
   ")\n{\n" ^
-  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
+  (*String.concat "" (List.map string_of_vdecl fdecl.locals.plaindec)^*)
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 

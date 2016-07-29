@@ -126,8 +126,10 @@ let translate (globals, functions) =
       in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
           (Array.to_list (L.params the_function)) in
-      List.fold_left add_local formals fdecl.A.locals in
-
+        match fdecl.A.locals with 
+       |  A.PlainDec(d) -> List.fold_left add_local formals d 
+       |  _ -> ignore()
+    in
 
     (* Return the value for a variable or formal argument *)
     let lookup n = try StringMap.find n local_vars
@@ -230,7 +232,7 @@ let translate (globals, functions) =
        the statement's successor *)
     let rec stmt curr_builder (*break_builder cont_builder*) = function
 	A.Block sl -> List.fold_left stmt curr_builder sl 
-      | A.Expr e -> ignore (expr curr_builder e); curr_builder
+      | A.Expr e -> ignore (expr curr_builder e); curr_builder 
       | A.Break e -> ignore(e) (*L.build_br break_builder) *); curr_builder 
       | A.Continue e -> ignore(e) (*L.build_br cont_builder) *); curr_builder 
       | A.Return e -> ignore (match fdecl.A.typ with

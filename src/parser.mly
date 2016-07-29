@@ -11,6 +11,7 @@ Modified: 2016-07-25
 
 %{
 open Ast
+module S=String
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT
@@ -18,11 +19,12 @@ open Ast
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT BOOL VOID CHAR
+%token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT BOOL VOID CHAR STRING
 %token PRINT
 %token <int> LITERAL
 %token <string> ID
 %token <char> CHARLIT
+%token <string> STRLIT
 %token EOF
 
 %nonassoc NOELSE
@@ -75,6 +77,7 @@ parameter:
 typ_specifier:
     INT  { Int }
   | CHAR { Char }
+  | STRING { String }
   | BOOL { Bool }
   | VOID { Void }
 
@@ -87,6 +90,7 @@ declaration:
   | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnYes, [$4]) }
   | typ_specifier LBRACKET expression RBRACKET ID SEMI                 { ($1, $5, Array, $3, DeclAssnNo,  []) }
   | typ_specifier LBRACKET expression RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array, $3, DeclAssnYes, $7) }
+  | typ_specifier ID ASSIGNREG STRLIT SEMI { ($1, $2, Array, (S.length $4), DeclAssnYes, $4) }
 
 decl_assign_arr:
     LBRACE arr_assign RBRACE { List.rev $2 }
@@ -149,6 +153,7 @@ expression:
 primary:
     LITERAL { Literal($1) }
   | CHARLIT { CharLit($1) }
+  | STRLIT  { StrLit($1) }
   | TRUE    { BoolLit(true) }
   | FALSE   { BoolLit(false) }
   | lvalue  { Lvalue($1) }
