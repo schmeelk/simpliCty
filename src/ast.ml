@@ -10,8 +10,6 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
-module C=Char
-
 type decl = Primitive | Array (* | Struct *)
 
 type decl_assn = DeclAssnYes | DeclAssnNo
@@ -29,16 +27,13 @@ type typ = Int | Bool | Void | Char
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
-type charlit =
-    CLit of char
-
 type lvalue = 
     Id of string
   | Arr of string * int
 
 type primary =
     Literal of int
-  | CharLit of charlit
+  | CharLit of char
   | BoolLit of bool
   | Lvalue of lvalue
 
@@ -115,16 +110,13 @@ let string_of_assn = function
   | AssnDiv  -> "/="
   | AssnMod  -> "%="
 
-let string_of_char = function
-  | CLit(c) -> string_of_int(int_of_char c)
-
 let string_of_lvalue = function
     Id(s)    -> s
   | Arr(s,_) -> s
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
-  | CharLit(c)     -> string_of_char c
+  | CharLit(c)     -> string_of_int (int_of_char c)
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
 
