@@ -1,0 +1,20 @@
+int main()
+{
+ int x;
+ int y;
+ int z;
+ x = 0;
+ z = 5;
+ if (x == 0){
+   if (z == 5){
+     y = 10;
+   }
+   else{
+     y = 99;
+   }
+ }
+ else{
+   y = 100;
+ }
+ return 0;
+}

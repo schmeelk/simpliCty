@@ -1,0 +1,10 @@
+int main()
+{
+  int i;
+  for (i = 0 ; i < 5 ; i++ ) {
+     i++;
+     if (i == 9)
+      i=20;
+  }
+  return 0;
+}

@@ -27,6 +27,7 @@ clean :
 	ocamlbuild -clean
 	rm -rf tests/test.log tests/test-output/* simplicty scanner.ml parser.ml parser.mli
 	rm -rf *.cmx *.cmi *.cmo *.cmx *.o
+	clear
 
 # More detailed: build using ocamlc/ocamlopt + ocamlfind to locate LLVM
 

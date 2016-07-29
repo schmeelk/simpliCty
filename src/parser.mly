@@ -18,7 +18,7 @@ open Ast
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID CHAR
+%token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT BOOL VOID CHAR
 %token PRINT
 %token <int> LITERAL
 %token <string> ID
@@ -107,6 +107,8 @@ statement:
   | WHILE LPAREN expression RPAREN statement { While($3, $5) }
   | FOR LPAREN expression_opt SEMI expression SEMI expression_opt RPAREN statement
      { For($3, $5, $7, $9) }
+  | BREAK SEMI            { Break Noexpr }
+  | CONTINUE SEMI         { Continue Noexpr }
   | RETURN SEMI            { Return Noexpr }
   | RETURN expression SEMI { Return $2 }
 

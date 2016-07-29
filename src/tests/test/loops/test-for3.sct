@@ -1,0 +1,12 @@
+int main()
+{
+  int i;
+  int j;
+  for (i = 0 ; i < 5 ; i++ ) {
+     i++;
+  }
+  for (j = 0 ; j < 5 ; j++ ) {
+     j++;
+  }
+  return 0;
+}
