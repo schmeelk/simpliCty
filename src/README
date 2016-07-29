@@ -1,4 +1,3 @@
-#test
 The simpliCty compiler
 
 Coded in OCaml, this takes a highly stripped-down subset of C (ints,
