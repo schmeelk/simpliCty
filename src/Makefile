@@ -20,6 +20,9 @@ simplicty.native :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
 		simplicty.native
 
+opam :
+	eval `opam config env`	
+
 # "make clean" removes all generated files
 
 .PHONY : clean

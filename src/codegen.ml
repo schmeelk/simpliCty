@@ -33,6 +33,7 @@ let translate (globals, functions) =
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.String -> i32_t
     | A.Char -> i32_t
     | A.Bool -> i1_t
     | A.Void -> void_t
@@ -126,10 +127,7 @@ let translate (globals, functions) =
       in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
           (Array.to_list (L.params the_function)) in
-        match fdecl.A.locals with 
-       |  A.PlainDec(d) -> List.fold_left add_local formals d 
-       |  _ -> ignore()
-    in
+        List.fold_left add_local formals fdecl.A.locals in
 
     (* Return the value for a variable or formal argument *)
     let lookup n = try StringMap.find n local_vars
@@ -148,6 +146,7 @@ let translate (globals, functions) =
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
       A.Literal i -> L.const_int i32_t i
+    | A.StrLit s -> L.const_int i32_t (int_of_char s.[0]) (* TODO this needs an array alloc call *)
     | A.CharLit c -> L.const_int i32_t (int_of_char c)
     | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
     | A.Lvalue lv -> lvalue builder lv            
@@ -230,24 +229,24 @@ let translate (globals, functions) =
 	
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
-    let rec stmt curr_builder (*break_builder cont_builder*) = function
-	A.Block sl -> List.fold_left stmt curr_builder sl 
-      | A.Expr e -> ignore (expr curr_builder e); curr_builder 
-      | A.Break e -> ignore(e) (*L.build_br break_builder) *); curr_builder 
-      | A.Continue e -> ignore(e) (*L.build_br cont_builder) *); curr_builder 
+    let rec stmt (curr_builder, break_builder, cont_builder) = function
+	A.Block sl -> List.fold_left stmt (curr_builder, break_builder, cont_builder) sl 
+      | A.Expr e -> ignore(expr curr_builder e); (curr_builder, break_builder, cont_builder) 
+      | A.Break -> ignore(L.build_br break_builder); (curr_builder, break_builder, cont_builder)
+      | A.Continue -> ignore(L.build_br cont_builder); (curr_builder, break_builder, cont_builder)
       | A.Return e -> ignore (match fdecl.A.typ with
 	  A.Void -> L.build_ret_void curr_builder
-	| _ -> L.build_ret (expr curr_builder e) curr_builder); curr_builder
+	| _ -> L.build_ret (expr curr_builder e) curr_builder); (curr_builder, break_builder, cont_builder)
       | A.If (predicate, then_stmt, else_stmt) ->
          let bool_val = expr curr_builder predicate in
 	 let merge_bb = L.append_block context "if_else_merge" the_function in
 
 	 let then_bb = L.append_block context "if_then" the_function in
-	 add_terminal (stmt (L.builder_at_end context then_bb) then_stmt)
+	 add_terminal (stmt ((L.builder_at_end context then_bb), break_builder, cont_builder) then_stmt)
 	   (L.build_br merge_bb);
 
 	 let else_bb = L.append_block context "if_else" the_function in
-	 add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
+	 add_terminal (stmt ((L.builder_at_end context else_bb), break_builder, cont_builder) else_stmt)
 	   (L.build_br merge_bb);
 
 	 ignore (L.build_cond_br bool_val then_bb else_bb curr_builder);
@@ -259,7 +258,7 @@ let translate (globals, functions) =
 	  let body_bb = L.append_block context "while_body" the_function in
 	  let merge_bb = L.append_block context "while_merge_block" the_function in
 
-	  add_terminal (stmt ((L.builder_at_end context body_bb) (*(L.builder_at_end context merge_bb) (L.builder_at_end context pred_bb*) ) body)
+	  add_terminal (stmt ((L.builder_at_end context body_bb),(L.builder_at_end context merge_bb), (L.builder_at_end context pred_bb) ) body)
 	    (L.build_br pred_bb);
 
 	  let pred_builder = L.builder_at_end context pred_bb in
@@ -268,12 +267,12 @@ let translate (globals, functions) =
 	  ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
 	  L.builder_at_end context merge_bb
 
-      | A.For (e1, e2, e3, body) -> stmt curr_builder
+      | A.For (e1, e2, e3, body) -> stmt (curr_builder, break_builder, cont_builder)
 	    ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in
 
     (* Build the code for each statement in the function *)
-    let builder = stmt builder (A.Block fdecl.A.body) in
+    let builder = stmt (builder, "dummy" , "dummy" ) (A.Block fdecl.A.body) in
 
     (* Add a return if the last block falls off the end *)
     add_terminal builder (match fdecl.A.typ with

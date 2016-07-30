@@ -49,20 +49,13 @@ type expr =
 
 type parameter = typ * string * decl * expr
 
-type plaindec = typ * string * decl * expr * decl_assn * (primary list)
-
-type decinit = typ * string * decl * int * decl_assn * (primary list)
-
-type declaration = 
-    PlainDec of plaindec 
-  | DecInit of decinit 
-
+type declaration = typ * string * decl * expr * decl_assn * (primary list)
 
 type stmt =
     Block of stmt list
   | Expr of expr
-  | Break of expr
-  | Continue of expr
+  | Break (*of expr*)
+  | Continue (*of expr*)
   | Return of expr
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
@@ -149,8 +142,8 @@ let rec string_of_stmt = function
     Block(stmts)        ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
   | Expr(expr)          -> string_of_expr expr ^";\n";
-  | Continue(expr)        -> "continue"^ string_of_expr expr ^";\n";
-  | Break(expr)        -> "break"^ string_of_expr expr ^";\n";
+  | Continue        -> "continue;\n";
+  | Break        -> "break;\n";
   | Return(expr)        -> "return "^ string_of_expr expr ^";\n";
   | If(e, s, Block([])) -> "if ("^ string_of_expr e ^")\n"^ string_of_stmt s
   | If(e, s1, s2)       -> "if ("^ string_of_expr e ^")\n"^
