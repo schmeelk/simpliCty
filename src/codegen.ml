@@ -233,13 +233,13 @@ let translate (globals, functions) =
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
     let rec stmt (curr_builder, break_builder, cont_builder) = function
-	A.Block sl -> List.fold_left stmt (curr_builder, break_builder, cont_builder) sl 
+	A.Block sl ->  List.fold_left stmt (curr_builder, break_builder, cont_builder) sl 
       | A.Expr e -> ignore(expr curr_builder e); (curr_builder, break_builder, cont_builder) 
-      | A.Break -> ignore(L.build_br break_builder); (curr_builder, break_builder, cont_builder)
-      | A.Continue -> ignore(L.build_br cont_builder); (curr_builder, break_builder, cont_builder)
-      | A.Return e -> ignore (match fdecl.A.typ with
-	  A.Void -> L.build_ret_void curr_builder
-	| _ -> L.build_ret (expr curr_builder e) curr_builder); (curr_builder, break_builder, cont_builder)
+      | A.Break -> ignore(L.build_br break_builder curr_builder); (curr_builder, break_builder, cont_builder)
+      | A.Continue ->  ignore(L.build_br cont_builder curr_builder); (curr_builder, break_builder, cont_builder)
+      | A.Return e ->  ignore (match fdecl.A.typ with
+	  A.Void ->  L.build_ret_void curr_builder
+	| _ ->L.build_ret (expr curr_builder e) curr_builder); (curr_builder, break_builder, cont_builder)
       | A.If (predicate, then_stmt, else_stmt) ->
          let bool_val = expr curr_builder predicate in
 	 let merge_bb = L.append_block context "if_else_merge" the_function in
