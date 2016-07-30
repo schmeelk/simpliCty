@@ -19,7 +19,7 @@ module S=String
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT BOOL VOID CHAR STRING
+%token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT FLOAT BOOL VOID CHAR STRING
 %token PRINT
 %token <int> LITERAL
 %token <string> ID
@@ -75,8 +75,9 @@ parameter:
   | typ_specifier LBRACKET expression RBRACKET ID { ($1,$5, Array,     $3) }
 
 typ_specifier:
-    INT  { Int }
-  | CHAR { Char }
+    INT   { Int }
+  | FLOAT { FLOAT }
+  | CHAR  { Char }
   | STRING { String }
   | BOOL { Bool }
   | VOID { Void }

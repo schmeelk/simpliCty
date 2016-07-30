@@ -23,7 +23,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void | Char | String
+type typ = Int | Bool | Void | Char | String | Float
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -155,6 +155,7 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
     Int  -> "int"
+  | Float -> "float"
   | Char -> "char"
   | String -> "string"
   | Bool -> "bool"

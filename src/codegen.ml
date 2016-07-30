@@ -28,11 +28,13 @@ let translate (globals, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
   and i32_t  = L.i32_type  context
+  and ifloat_t  = L.float_type  context
   and i1_t   = L.i1_type   context
   and void_t = L.void_type context in
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.Float -> ifloat_t
     | A.String -> i32_t
     | A.Char -> i32_t
     | A.Bool -> i1_t
