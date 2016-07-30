@@ -32,7 +32,8 @@ type lvalue =
   | Arr of string * int
 
 type primary =
-    Literal of int
+    Fliteral of float 
+  | Literal of int
   | StrLit of string 
   | CharLit of char
   | BoolLit of bool
@@ -119,7 +120,8 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
-  | StrLit(s)   -> s 
+  | Fliteral(f)    -> string_of_float f 
+  | StrLit(s)      -> s 
   | CharLit(c)     -> string_of_int (int_of_char c)
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l

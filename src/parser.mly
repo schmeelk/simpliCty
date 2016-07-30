@@ -22,6 +22,7 @@ module S=String
 %token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT FLOAT BOOL VOID CHAR STRING
 %token PRINT
 %token <int> LITERAL
+%token <float> FLITERAL
 %token <string> ID
 %token <char> CHARLIT
 %token <string> STRLIT
@@ -152,12 +153,13 @@ expression:
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
-    LITERAL { Literal($1) }
-  | CHARLIT { CharLit($1) }
-  | STRLIT  { StrLit($1) }
-  | TRUE    { BoolLit(true) }
-  | FALSE   { BoolLit(false) }
-  | lvalue  { Lvalue($1) }
+    LITERAL  { Literal($1) }
+  | FLITERAL { Fliteral($1) }
+  | CHARLIT  { CharLit($1) }
+  | STRLIT   { StrLit($1) }
+  | TRUE     { BoolLit(true) }
+  | FALSE    { BoolLit(false) }
+  | lvalue   { Lvalue($1) }
 
 lvalue:
     ID                           { Id($1) }

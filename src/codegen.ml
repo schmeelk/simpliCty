@@ -148,6 +148,7 @@ let translate (globals, functions) =
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
       A.Literal i -> L.const_int i32_t i
+    | A.Fliteral f -> L.const_float ifloat_t f 
     | A.StrLit s -> L.const_int i32_t (int_of_char s.[0]) (* TODO this needs an array alloc call *)
     | A.CharLit c -> L.const_int i32_t (int_of_char c)
     | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
