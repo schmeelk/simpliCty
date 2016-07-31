@@ -13,12 +13,12 @@ Modified: 2016-07-25
 open Ast
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT DOUBLEQT
 %token PLUS MINUS TIMES DIVIDE MODULO
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE BREAK CONTINUE INT BOOL VOID CHAR
+%token RETURN IF ELSE FOR WHILE BREAK CONTINUE INT BOOL VOID CHAR STRING
 %token PRINT
 %token <int> LITERAL
 %token <string> ID
@@ -87,9 +87,17 @@ declaration:
   | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnYes, [$4]) }
   | typ_specifier LBRACKET expression RBRACKET ID SEMI                 { ($1, $5, Array, $3, DeclAssnNo,  []) }
   | typ_specifier LBRACKET expression RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array, $3, DeclAssnYes, $7) }
+  | typ_specifier ID ASSIGNREG array_decl SEMI { ($1, $2, Array, Primary(Literal(List.length $4)), DeclAssnYes, $4) }
 
 decl_assign_arr:
     LBRACE arr_assign RBRACE { List.rev $2 }
+
+array_decl:
+    DOUBLEQT char_lit_list DOUBLEQT { List.rev $2 }
+
+char_lit_list:
+    primary         { [$1] }
+  | char_lit_list primary { $2 :: $1 }
 
 arr_assign:
     primary                 { [$1] }

@@ -20,6 +20,7 @@ rule token = parse
 | '}'      { RBRACE }
 | '['      { LBRACKET }
 | '''      { SINGLEQT }
+| '"'      { DOUBLEQT }
 | ']'      { RBRACKET }
 | ';'      { SEMI }
 | ','      { COMMA }
@@ -53,6 +54,7 @@ rule token = parse
 | "return" { RETURN }
 | "int"    { INT }
 | "char"   { INT }
+| "string" { STRING }
 | "bool"   { BOOL }
 | "void"   { VOID }
 | "true"   { TRUE }
@@ -60,6 +62,7 @@ rule token = parse
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | '''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']''' as lxm { LITERAL(int_of_char lxm.[1]) }
+(*| ['a'-'z' 'A'-'Z' ' ' '!' '0'-'9'] as lxm { LITERAL(int_of_char lxm.[0]) } *)
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 

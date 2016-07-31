@@ -23,7 +23,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void | Char
+type typ = Int | Bool | Void | Char | String
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -47,6 +47,8 @@ type expr =
   | Noexpr
 
 type parameter = typ * string * decl * expr
+
+(*type array_decl = primary * (primary list) *)
 
 type declaration = typ * string * decl * expr * decl_assn * (primary list)
 
@@ -153,6 +155,7 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
     Int  -> "int"
+  | String -> "string"
   | Char -> "char"
   | Bool -> "bool"
   | Void -> "void"
