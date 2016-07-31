@@ -63,11 +63,14 @@ let translate (globals, functions) =
   
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
-    let global_var m (typ, name, _, _, _, _) =
-          let init = L.const_int (ltype_of_typ typ) 0
-          in StringMap.add name (L.define_global name init the_module) m
-      
+    let global_var m (typ, name, _, _, assign, values) =
+      let typ' = ltype_of_typ typ in
+      let init = L.const_int typ' (match assign with
+        A.DeclAssnYes -> (match values with [p] -> primary_decompose p | _ -> 0)
+      | _            -> 0)
       in
+      StringMap.add name ((L.define_global name init the_module), A.Primitive, A.Primary(A.Literal(0))) m   
+    in
     List.fold_left global_var StringMap.empty globals in
 
   (* Declare putchar(), which the putchar built-in function will call *)
@@ -94,20 +97,21 @@ let translate (globals, functions) =
        value, if appropriate, and remember their values in the "locals" map *)
     let local_vars =
       let add_formal m (typ, name, decl, size) p =
+        L.set_value_name name p;
+        let typ' = ltype_of_typ typ in
+        let addr = (match decl with
+          A.Primitive -> L.build_alloca typ'
+        | _           -> L.build_array_alloca typ' (match size with
+            A.Primary(A.Literal(s)) -> L.const_int i32_t s
+          | _                       -> L.const_int i32_t 0) 
+        ) name builder in
         (match decl with
           A.Primitive ->
-            L.set_value_name name p;
-	    let local = L.build_alloca (ltype_of_typ typ) name builder in
-	    ignore (L.build_store p local builder);
-	    StringMap.add name local m
-        | A.Array -> L.set_value_name name p;
-            let size_s = (match size with
-              A.Primary(A.Literal(s)) -> L.const_int i32_t s
-            | _ -> L.const_int i32_t 0) in
-	    let local = L.build_array_alloca (ltype_of_typ typ) size_s name builder in
-	    ignore (L.build_store p local builder);
-	    StringMap.add name local m
-        ) in
+	    ignore(L.build_store p addr builder)
+        | A.Array ->
+            ignore(L.build_store p addr builder)
+        ); StringMap.add name (addr,decl,size) m
+      in
       let add_local m (typ, name, decl, size, assign, values) =
         let typ' = ltype_of_typ typ in
         let addr = (match decl with
@@ -122,7 +126,7 @@ let translate (globals, functions) =
         | A.Array     ->
             ignore(List.fold_left (fun index _vals ->
             ignore(store_array_idx addr index typ' assign _vals builder);index+1) 0 values)
-        ); StringMap.add name addr m
+        ); StringMap.add name (addr,decl,size) m
       in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
           (Array.to_list (L.params the_function)) in
@@ -130,14 +134,46 @@ let translate (globals, functions) =
 
 
     (* Return the value for a variable or formal argument *)
-    let lookup n = try StringMap.find n local_vars
-                   with Not_found -> StringMap.find n global_vars
+    let lookup_addr n = 
+      (fun (a,_,_) -> a)
+      (try StringMap.find n local_vars
+         with Not_found -> StringMap.find n global_vars)
+    and lookup_decl n =
+      (fun (_,b,_) -> b)
+      (try StringMap.find n local_vars
+         with Not_found -> StringMap.find n global_vars)
+    and lookup_size n =
+      (fun (_,_,c) -> c)
+      (try StringMap.find n local_vars
+         with Not_found -> StringMap.find n global_vars)
     in
     (*Construct code for lvalues; return value pointed to*)
     let lvalue builder = function
-      A.Id(s)    -> L.build_load (lookup s) s builder
+      A.Id(s)    -> (*(match lookup_decl s with
+        A.Primitive ->*) L.build_load (lookup_addr s) s builder
+      (*| A.Array     ->
+         let addr = lookup_addr s
+         in
+         L.build_in_bounds_gep addr*)
+         (* let addr_base = lookup_addr s
+          and arr_size = (match lookup_size s with
+            A.Primary(A.Literal(i)) -> i
+          | _                       -> 0
+          ) in
+          let arr_size_m = arr_size + 1 in
+          let load_i i =
+            let i' = L.const_int i32_t i in
+            let addr = L.build_in_bounds_gep addr_base [|i'|] "tmp" builder in
+            L.build_load addr s builder
+          in
+          let rec load_arr i = match i with
+            arr_size_m-> arr_size
+          | arr_size  -> arr_size
+          | _         -> load_i i; load_arr i+1
+          in ignore(load_arr 1); L.build_load addr_base s builder
+      )*)
     | A.Arr(s,i) ->
-        let s' = lookup s
+        let s' = lookup_addr s
         and i' = L.const_int i32_t i in
         let addr = L.build_in_bounds_gep s' [|i'|] "tmp" builder in
         L.build_load addr s builder
@@ -190,9 +226,9 @@ let translate (globals, functions) =
       | A.Assign (lv, op, e) ->
           let value = (A.Primary (A.Lvalue lv))
           and addr  = (match lv with
-            A.Id(s)    -> lookup s
+            A.Id(s)    -> lookup_addr s
           | A.Arr(s,i) ->
-              let s' = lookup s
+              let s' = lookup_addr s
               and i' = L.const_int i32_t i in
               L.build_in_bounds_gep s' [|i'|] "tmp" builder) in
           let eval = (match op with
