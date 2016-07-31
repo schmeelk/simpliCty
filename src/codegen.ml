@@ -83,11 +83,15 @@ let translate (globals, externs, functions) =
   let global_vars =
     let global_var m (typ, name, _, _, assign, values) =
       let typ' = ltype_of_typ typ in
-      let init = L.const_int typ' (match assign with
+      let init = (match typ with
+        A.Float -> L.const_float
+      | _       -> L.const_int
+      ) typ' (match assign with
         A.DeclAssnYes -> (match values with [p] -> primary_decompose p | _ -> 0)
-      | _            -> 0)
+      | _             -> 0
+      ) in
       in
-      StringMap.add name ((L.define_global name init the_module), A.Primitive, 0) m   
+      StringMap.add name ((L.define_global name init the_module), A.Primitive, A.Primary(A.Literal(0))) m   
     in
     List.fold_left global_var StringMap.empty globals in
 
@@ -173,10 +177,9 @@ let translate (globals, externs, functions) =
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
     and lookup_size n =
-      let (_,_,c) =
+      (fun (_,_,c) -> c)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-      in c
     in
     (*Construct code for lvalues; return value pointed to*)
     
