@@ -53,6 +53,8 @@ type declaration = typ * string * decl * expr * decl_assn * (primary list)
 type stmt =
     Block of stmt list
   | Expr of expr
+  | Break 
+  | Continue 
   | Return of expr
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
@@ -138,6 +140,8 @@ let rec string_of_stmt = function
     Block(stmts)        ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
   | Expr(expr)          -> string_of_expr expr ^";\n";
+  | Break               -> "break;\n";
+  | Continue            -> "continue;\n";
   | Return(expr)        -> "return "^ string_of_expr expr ^";\n";
   | If(e, s, Block([])) -> "if ("^ string_of_expr e ^")\n"^ string_of_stmt s
   | If(e, s1, s2)       -> "if ("^ string_of_expr e ^")\n"^
