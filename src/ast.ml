@@ -23,7 +23,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void | Char | String | Float
+type typ = Int | Bool | Void | Char
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -32,9 +32,7 @@ type lvalue =
   | Arr of string * int
 
 type primary =
-    Fliteral of float 
-  | Literal of int
-  | StrLit of string 
+    Literal of int
   | CharLit of char
   | BoolLit of bool
   | Lvalue of lvalue
@@ -55,9 +53,9 @@ type declaration = typ * string * decl * expr * decl_assn * (primary list)
 type stmt =
     Block of stmt list
   | Expr of expr
-  | Break (*of expr*)
-  | Continue (*of expr*)
   | Return of expr
+  | Break 
+  | Continue  
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
@@ -120,8 +118,6 @@ let string_of_lvalue = function
 
 let string_of_primary = function
     Literal(l)     -> string_of_int l
-  | Fliteral(f)    -> string_of_float f 
-  | StrLit(s)      -> s 
   | CharLit(c)     -> string_of_int (int_of_char c)
   | BoolLit(l)     -> if l = true then "true" else "false"
   | Lvalue(l)      -> string_of_lvalue l
@@ -144,8 +140,8 @@ let rec string_of_stmt = function
     Block(stmts)        ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
   | Expr(expr)          -> string_of_expr expr ^";\n";
-  | Continue        -> "continue;\n";
-  | Break        -> "break;\n";
+  | Break               -> "break;\n";
+  | Continue            -> "continue;\n";
   | Return(expr)        -> "return "^ string_of_expr expr ^";\n";
   | If(e, s, Block([])) -> "if ("^ string_of_expr e ^")\n"^ string_of_stmt s
   | If(e, s1, s2)       -> "if ("^ string_of_expr e ^")\n"^
@@ -157,9 +153,7 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
     Int  -> "int"
-  | Float -> "float"
   | Char -> "char"
-  | String -> "string"
   | Bool -> "bool"
   | Void -> "void"
 
@@ -172,10 +166,11 @@ let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
   fdecl.fname ^ "(" ^ String.concat ", " (List.map snd_of_four fdecl.formals) ^
   ")\n{\n" ^
-  (*String.concat "" (List.map string_of_vdecl fdecl.locals.plaindec)^*)
+  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
 let string_of_program (vars, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)
+

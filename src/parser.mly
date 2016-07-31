@@ -11,7 +11,6 @@ Modified: 2016-07-25
 
 %{
 open Ast
-module S=String
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT
@@ -19,13 +18,11 @@ module S=String
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR CONTINUE BREAK WHILE INT FLOAT BOOL VOID CHAR STRING
+%token RETURN IF ELSE FOR WHILE BREAK CONTINUE INT BOOL VOID CHAR
 %token PRINT
 %token <int> LITERAL
-%token <float> FLITERAL
 %token <string> ID
 %token <char> CHARLIT
-%token <string> STRLIT
 %token EOF
 
 %nonassoc NOELSE
@@ -76,10 +73,8 @@ parameter:
   | typ_specifier LBRACKET expression RBRACKET ID { ($1,$5, Array,     $3) }
 
 typ_specifier:
-    INT   { Int }
-  | FLOAT { FLOAT }
-  | CHAR  { Char }
-  | STRING { String }
+    INT  { Int }
+  | CHAR { Char }
   | BOOL { Bool }
   | VOID { Void }
 
@@ -92,7 +87,6 @@ declaration:
   | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnYes, [$4]) }
   | typ_specifier LBRACKET expression RBRACKET ID SEMI                 { ($1, $5, Array, $3, DeclAssnNo,  []) }
   | typ_specifier LBRACKET expression RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array, $3, DeclAssnYes, $7) }
-  | typ_specifier ID ASSIGNREG STRLIT SEMI { ($1, $2, Array, (S.length $4), DeclAssnYes, $4) }
 
 decl_assign_arr:
     LBRACE arr_assign RBRACE { List.rev $2 }
@@ -113,8 +107,6 @@ statement:
   | WHILE LPAREN expression RPAREN statement { While($3, $5) }
   | FOR LPAREN expression_opt SEMI expression SEMI expression_opt RPAREN statement
      { For($3, $5, $7, $9) }
-  | BREAK SEMI            { Break (*Noexpr*) }
-  | CONTINUE SEMI         { Continue (*Noexpr*) }
   | RETURN SEMI            { Return Noexpr }
   | RETURN expression SEMI { Return $2 }
 
@@ -153,13 +145,11 @@ expression:
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
-    LITERAL  { Literal($1) }
-  | FLITERAL { Fliteral($1) }
-  | CHARLIT  { CharLit($1) }
-  | STRLIT   { StrLit($1) }
-  | TRUE     { BoolLit(true) }
-  | FALSE    { BoolLit(false) }
-  | lvalue   { Lvalue($1) }
+    LITERAL { Literal($1) }
+  | CHARLIT { CharLit($1) }
+  | TRUE    { BoolLit(true) }
+  | FALSE   { BoolLit(false) }
+  | lvalue  { Lvalue($1) }
 
 lvalue:
     ID                           { Id($1) }
@@ -171,4 +161,5 @@ expression_list_opt:
 
 expression_list:
     expression                       { [$1] }
-  | expression_list COMMA expression { $3 :: $1 }
+| expression_list COMMA expression { $3 :: $1 }
+

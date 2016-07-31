@@ -48,25 +48,22 @@ rule token = parse
 | "if"     { IF }
 | "else"   { ELSE }
 | "for"    { FOR }
-| "while"  { WHILE }
-| "break"    { BREAK }
-| "continue"    { CONTINUE }
+| "continue"  { CONTINUE }
+| "break"  { BREAK }
 | "return" { RETURN }
 | "int"    { INT }
 | "char"   { INT }
 | "bool"   { BOOL }
-| "float"  { FLOAT }
 | "void"   { VOID }
 | "true"   { TRUE }
 | "false"  { FALSE }
-| ['0'-'9']+'.'+['0'-'9']+ as lxm { FLITERAL(float_of_string lxm) }
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
-| '\''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']*'\'' as lxm { LITERAL(int_of_char lxm.[1]) }
-| '\"'['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']*'\"' as lxm { STRLIT(lxm) }
+| '''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']''' as lxm { LITERAL(int_of_char lxm.[1]) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse
   "*/" { token lexbuf }
-| _    { comment lexbuf }
+| _ { comment lexbuf }
+

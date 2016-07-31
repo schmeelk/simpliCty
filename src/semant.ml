@@ -190,8 +190,8 @@ let check (globals, functions) =
          | [] -> ()
         in check_block sl
       | Expr e -> ignore (expr e)
-      | Break e -> ignore (expr e)     (*TODO: Include outside loop check *)
-      | Continue e -> ignore (expr e)  (*TODO: Include outside loop check *)
+      | Break -> ignore ()    (*TODO: Include outside loop check *)
+      | Continue -> ignore ()  (*TODO: Include outside loop check *)
       | Return e -> let t = expr e in if t = func.typ then () else
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))
