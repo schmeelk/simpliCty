@@ -138,7 +138,7 @@ let translate (globals, functions) =
       (fun (a,_,_) -> a)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-    and lookup_decl n =
+    (*and lookup_decl n =
       (fun (_,b,_) -> b)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
@@ -146,8 +146,9 @@ let translate (globals, functions) =
       (fun (_,_,c) -> c)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-    in
+    *)in
     (*Construct code for lvalues; return value pointed to*)
+    (*TODO ADAM: FIX TO ONLY SEND POINTER *)
     let lvalue builder = function
       A.Id(s)    -> (*(match lookup_decl s with
         A.Primitive ->*) L.build_load (lookup_addr s) s builder
@@ -178,23 +179,35 @@ let translate (globals, functions) =
         let addr = L.build_in_bounds_gep s' [|i'|] "tmp" builder in
         L.build_load addr s builder
     in
-
+    (*TODO ADAM: lvalue_array_idx makes codegen that load arrayIdx value*)
+    (*let lvalue_array_idx builder addr pos =
+      let pos'  = L.const_int i32_t i in
+      let addr' = L.build_in_bounds_gep addr [|pos'|] "tmp" builder in
+      L.build_load addr' "arrIdxLoad" builder
+*)
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
-      A.Literal i -> L.const_int i32_t i
-    | A.CharLit c -> L.const_int i32_t (int_of_char c)
-    | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
-    | A.Lvalue lv -> lvalue builder lv            
+      A.Literal i -> (L.const_int i32_t i                       , A.Primitive, 0)
+    | A.CharLit c -> (L.const_int i32_t (int_of_char c)         , A.Primitive, 0)
+    | A.BoolLit b -> (L.const_int i1_t (if b then 1 else 0)     , A.Primitive, 0)
+    | A.Lvalue lv -> (L.const_ptrtoint (lvalue builder lv) i32_t, A.Array, 0)
     in
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.Primary p -> primary builder p
-      | A.Noexpr -> L.const_int i32_t 0
+      | A.Noexpr -> (L.const_int i32_t 0, A.Primitive, 0)
       | A.Binop (e1, op, e2) ->
-	  let e1' = expr builder e1
-	  and e2' = expr builder e2 in
-	  (match op with
+          let e1' = match (expr builder e1) with
+            (c , A.Primitive,_) -> c
+          | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
+            (*TODO ADAM: lvalue_array_idx does codegen here*)
+	  and e2' = match (expr builder e2) with
+            (c , A.Primitive,_) -> c
+          | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
+            (*TODO ADAM: lvalue_array_idx does codegen here*)
+          in
+	  ((match op with
 	    A.Add     -> L.build_add
 	  | A.Sub     -> L.build_sub
 	  | A.Mult    -> L.build_mul
@@ -208,12 +221,16 @@ let translate (globals, functions) =
 	  | A.Leq     -> L.build_icmp L.Icmp.Sle
 	  | A.Greater -> L.build_icmp L.Icmp.Sgt
 	  | A.Geq     -> L.build_icmp L.Icmp.Sge
-	  ) e1' e2' "tmp" builder
+	  ) e1' e2' "tmp" builder, A.Primitive, 0)
       | A.Unop(op, e) ->
-          let e' = expr builder e in
-	  (match op with
+          let e' = match (expr builder e) with
+            (c , A.Primitive,_) -> c 
+          | (p , _,_) -> L.const_inttoptr p (L.pointer_type i32_t)
+            (*TODO ADAM: lvalue_array_idx does codegen here*)
+          in
+	  ((match op with
 	    A.Neg     -> L.build_neg
-          | A.Not     -> L.build_not) e' "tmp" builder
+          | A.Not     -> L.build_not) e' "tmp" builder, A.Primitive, 0)
       | A.Crement(opDir, op, lv) ->
           (match opDir with
             A.Pre  -> expr builder (A.Assign(lv, (match op with
@@ -221,7 +238,7 @@ let translate (globals, functions) =
             | A.MinusMinus -> A.AssnSub), (A.Primary (A.Literal 1))))
           | A.Post ->
               let lv' = lvalue builder lv in
-             ignore(expr builder (A.Crement(A.Pre, op, lv))); lv'
+              ignore(expr builder (A.Crement(A.Pre, op, lv))); (lv', A.Primitive, 0)
           )
       | A.Assign (lv, op, e) ->
           let value = (A.Primary (A.Lvalue lv))
@@ -239,20 +256,21 @@ let translate (globals, functions) =
           | A.AssnDiv     -> expr builder (A.Binop(value, A.Div,  e))
           | A.AssnMod     -> expr builder (A.Binop(value, A.Mod,  e))
           ) in
+          let eval' = match eval with (p, _,_) -> p in
           (*ignore ((match lv with
             A.Id(s)    -> store_primitive (lookup s) i32_t A.DeclAssnYes [A.Literal(eval)] builder
           | A.Arr(s,i) -> store_array_idx (lookup s) i32_t i A.DeclAssnYes [A.Literal(eval)] builder 
           )); eval*)
-          ignore (L.build_store eval addr builder); eval
+          ignore (L.build_store eval' addr builder); eval
       | A.Call ("putchar", [e]) ->
-      L.build_call putchar_func [| (expr builder e) |]
-        "putchar" builder
+        (L.build_call putchar_func [|(match expr builder e with (p,_,_)->p)|] "putchar" builder, A.Primitive, 0)
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
-	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
+	 let actuals = List.rev (List.map (fun a ->
+           match expr builder a with (p,_,_)->p) (List.rev act)) in
 	 let result = (match fdecl.A.typ with A.Void -> ""
                                             | _ -> f ^ "_result") in
-         L.build_call fdef (Array.of_list actuals) result builder
+         (L.build_call fdef (Array.of_list actuals) result builder, A.Primitive, 0)
     in
 
     (* Invoke "f builder" if the current block doesn't already
@@ -260,32 +278,34 @@ let translate (globals, functions) =
     let add_terminal builder f =
       match L.block_terminator (L.insertion_block builder) with
 	Some _ -> ()
-      | None -> ignore (f builder) in
+      | None   -> ignore (f builder) in
 	
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
     let rec stmt builder = function
-	A.Block sl -> List.fold_left stmt builder sl
-      | A.Expr e -> ignore (expr builder e); builder
-      | A.Return e -> ignore (match fdecl.A.typ with
-	  A.Void -> L.build_ret_void builder
-	| _ -> L.build_ret (expr builder e) builder); builder
+	A.Block sl                             ->
+          List.fold_left stmt builder sl
+      | A.Expr e                               ->
+          ignore (expr builder e); builder
+      | A.Return e                             ->
+          ignore (match fdecl.A.typ with
+	    A.Void -> L.build_ret_void builder
+	  | _      -> L.build_ret (match expr builder e with (p,_,_)->p) builder); builder
       | A.If (predicate, then_stmt, else_stmt) ->
-         let bool_val = expr builder predicate in
-	 let merge_bb = L.append_block context "merge" the_function in
+          let bool_val = match expr builder predicate with (p,_,_)->p in
+	  let merge_bb = L.append_block context "merge" the_function in
 
-	 let then_bb = L.append_block context "then" the_function in
-	 add_terminal (stmt (L.builder_at_end context then_bb) then_stmt)
-	   (L.build_br merge_bb);
+	  let then_bb = L.append_block context "then" the_function in
+	  add_terminal (stmt (L.builder_at_end context then_bb) then_stmt)
+	    (L.build_br merge_bb);
 
-	 let else_bb = L.append_block context "else" the_function in
-	 add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
-	   (L.build_br merge_bb);
+	  let else_bb = L.append_block context "else" the_function in
+	  add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
+	    (L.build_br merge_bb);
 
-	 ignore (L.build_cond_br bool_val then_bb else_bb builder);
-	 L.builder_at_end context merge_bb
-
-      | A.While (predicate, body) ->
+	  ignore (L.build_cond_br bool_val then_bb else_bb builder);
+	  L.builder_at_end context merge_bb
+      | A.While (predicate, body)              ->
 	  let pred_bb = L.append_block context "while" the_function in
 	  ignore (L.build_br pred_bb builder);
 
@@ -294,14 +314,13 @@ let translate (globals, functions) =
 	    (L.build_br pred_bb);
 
 	  let pred_builder = L.builder_at_end context pred_bb in
-	  let bool_val = expr pred_builder predicate in
+	  let bool_val = match expr pred_builder predicate with (p,_,_)->p in
 
 	  let merge_bb = L.append_block context "merge" the_function in
 	  ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
 	  L.builder_at_end context merge_bb
-
-      | A.For (e1, e2, e3, body) -> stmt builder
-	    ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
+      | A.For (e1, e2, e3, body)               ->
+          stmt builder ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in
 
     (* Build the code for each statement in the function *)
@@ -309,8 +328,8 @@ let translate (globals, functions) =
 
     (* Add a return if the last block falls off the end *)
     add_terminal builder (match fdecl.A.typ with
-        A.Void -> L.build_ret_void
-      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
+      A.Void -> L.build_ret_void
+    | t      -> L.build_ret (L.const_int (ltype_of_typ t) 0))
   in
 
   List.iter build_function_body functions;
