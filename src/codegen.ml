@@ -172,7 +172,7 @@ let translate (globals, externs, functions) =
       (fun (a,_,_) -> a)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-    and lookup_decl n =
+    (*and lookup_decl n =
       (fun (_,b,_) -> b)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
@@ -180,7 +180,7 @@ let translate (globals, externs, functions) =
       (fun (_,_,c) -> c)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-    in
+    *)in
     (*Construct code for lvalues; return value pointed to*)
     
     (*TODO ADAM: FIX TO ONLY SEND POINTER *)
