@@ -9,12 +9,15 @@ Purpose:  * Translates semantically checked SimpliCty AST to LLVM IR
           * Functions for printing the AST
 Modified: 2016-07-25
 *)
-
 (*: Make sure to read the OCaml version of the tutorial
-  http://llvm.org/docs/tutorial/index.html
-  Detailed documentation on the OCaml LLVM library:
-  http://llvm.moe/
-  http://llvm.moe/ocaml/
+
+http://llvm.org/docs/tutorial/index.html
+
+Detailed documentation on the OCaml LLVM library:
+
+http://llvm.moe/
+http://llvm.moe/ocaml/
+
 *)
 
 module L = Llvm
@@ -30,7 +33,6 @@ let translate (globals, functions) =
 
   let ltype_of_typ = function
       A.Int -> i32_t
-    | A.String -> i32_t
     | A.Char -> i32_t
     | A.Bool -> i1_t
     | A.Void -> void_t
@@ -229,8 +231,6 @@ let translate (globals, functions) =
     let rec stmt builder = function
 	A.Block sl -> List.fold_left stmt builder sl
       | A.Expr e -> ignore (expr builder e); builder
-      | A.Break -> builder 
-      | A.Continue -> builder
       | A.Return e -> ignore (match fdecl.A.typ with
 	  A.Void -> L.build_ret_void builder
 	| _ -> L.build_ret (expr builder e) builder); builder
@@ -250,19 +250,20 @@ let translate (globals, functions) =
 	 L.builder_at_end context merge_bb
 
       | A.While (predicate, body) ->
-         let pred_bb = L.append_block context "while" the_function in
+	  let pred_bb = L.append_block context "while.cmp.block" the_function in
 	  ignore (L.build_br pred_bb builder);
+	  let body_bb = L.append_block context "while.body" the_function in
+	  let merge_bb = L.append_block context "while.merge.block" the_function in
 
-	  let body_bb = L.append_block context "while_body" the_function in
 	  add_terminal (stmt (L.builder_at_end context body_bb) body)
 	    (L.build_br pred_bb);
 
 	  let pred_builder = L.builder_at_end context pred_bb in
 	  let bool_val = expr pred_builder predicate in
 
-	  let merge_bb = L.append_block context "merge" the_function in
 	  ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
-          L.builder_at_end context merge_bb
+	  L.builder_at_end context merge_bb
+
       | A.For (e1, e2, e3, body) -> stmt builder
 	    ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in
@@ -278,4 +279,3 @@ let translate (globals, functions) =
 
   List.iter build_function_body functions;
   the_module
-
