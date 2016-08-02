@@ -3,9 +3,9 @@ int main()
   int i;
   for (i = 0 ; i < 5 ; i++ ) {
      i++;
-     if(i == 3)
+     if ( i == 3 )
      {
-       break;
+       i =4;
      }
   }
   return 0;
