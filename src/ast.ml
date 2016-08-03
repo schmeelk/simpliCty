@@ -1,4 +1,4 @@
-(*
+(* 
 Project:  COMS S4115, SimpliCty Compiler
 Filename: src/ast.ml
 Authors:  - Rui Gu,           rg2970

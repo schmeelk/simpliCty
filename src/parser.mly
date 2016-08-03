@@ -1,4 +1,4 @@
-/*
+/* 
 Project:  COMS S4115, SimpliCty Compiler
 Filename: src/parser.mly
 Authors:  - Rui Gu,           rg2970

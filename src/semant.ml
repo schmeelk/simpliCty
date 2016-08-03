@@ -1,4 +1,4 @@
-(*
+(* 
 Project:  COMS S4115, SimpliCty Compiler
 Filename: src/semant.ml
 Authors:  - Rui Gu,           rg2970
