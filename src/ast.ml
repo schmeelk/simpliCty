@@ -23,7 +23,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Bool | Void | Char
+type typ = Int | Float | Bool | Void | Char
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -32,7 +32,8 @@ type lvalue =
   | Arr of string * int
 
 type primary =
-    Literal of int
+    IntLit of int
+  | FloatLit of float 
   | CharLit of char
   | BoolLit of bool
   | Lvalue of lvalue
@@ -117,10 +118,11 @@ let string_of_lvalue = function
   | Arr(s,_) -> s
 
 let string_of_primary = function
-    Literal(l)     -> string_of_int l
-  | CharLit(c)     -> string_of_int (int_of_char c)
-  | BoolLit(l)     -> if l = true then "true" else "false"
-  | Lvalue(l)      -> string_of_lvalue l
+    IntLit(i)     -> string_of_int i 
+  | FloatLit(f)   -> string_of_float f 
+  | CharLit(c)    -> string_of_int (int_of_char c)
+  | BoolLit(l)    -> if l = true then "true" else "false"
+  | Lvalue(l)     -> string_of_lvalue l
 
 let rec string_of_expr = function
     Primary(l)          -> string_of_primary l
@@ -152,10 +154,11 @@ let rec string_of_stmt = function
   | While(e, s)         -> "while ("^ string_of_expr e ^") "^ string_of_stmt s
 
 let string_of_typ = function
-    Int  -> "int"
-  | Char -> "char"
-  | Bool -> "bool"
-  | Void -> "void"
+    Int   -> "int"
+  | Float -> "float"
+  | Char  -> "char"
+  | Bool  -> "bool"
+  | Void  -> "void"
 
 let string_of_vdecl (t, id, _ , _, _, _) = string_of_typ t ^ " " ^ id ^ ";\n"
 

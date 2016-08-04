@@ -27,31 +27,41 @@ module StringMap = Map.Make(String)
 let translate (globals, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
-  and i32_t  = L.i32_type  context
-  and i1_t   = L.i1_type   context
-  and void_t = L.void_type context in
+  and i32_t  = L.i32_type   context
+  and f32_t  = L.float_type context
+  and i1_t   = L.i1_type    context
+  and void_t = L.void_type  context in
 
   let ltype_of_typ = function
-      A.Int -> i32_t
-    | A.Char -> i32_t
-    | A.Bool -> i1_t
-    | A.Void -> void_t
+      A.Int   -> i32_t
+    | A.Float -> f32_t
+    | A.Char  -> i32_t
+    | A.Bool  -> i1_t
+    | A.Void  -> void_t
   in
-  let primary_decompose = function
-      A.Literal(i) -> i
-    | A.BoolLit(b) -> if b then 1 else 0
-    | _            -> 0
+  let primary_decompose = function 
+      A.IntLit(i)   -> i 
+    | A.BoolLit(b)  -> if b then 1 else 0
+    | A.FloatLit(f) -> int_of_float f 
+    | _             -> 0
+
+  and primary_float_decompose = function
+      A.IntLit(i)   -> float_of_int i
+    | A.BoolLit(b)  -> if b then 1.0 else 0.0
+    | A.FloatLit(f) -> f
+    | _             -> 0.0
+
   in
  
   (* Store memory *) 
-  let store_primitive addr typ' assign value builder = 
+  let store_primitive addr typ' assign value builder =
     L.build_store (L.const_int typ' (match assign with
       A.DeclAssnYes -> (match value with
         [p] -> primary_decompose p
       | _   -> 0)
     | _             -> 0)
     ) addr builder
-  and store_array_idx addr index typ' assign value builder = 
+  and store_array_idx addr index typ' assign value builder =
     let i  = L.const_int i32_t index
     and v' = L.const_int typ' (match assign with
       A.DeclAssnYes -> primary_decompose value
@@ -59,14 +69,26 @@ let translate (globals, functions) =
     in
     let addr' = L.build_in_bounds_gep addr [|i|] "tmp" builder in
     L.build_store v' addr' builder
+  and store_float_primitive addr typ' assign value builder =
+    L.build_store (L.const_float typ' (match assign with
+      A.DeclAssnYes -> (match value with
+        [p] -> primary_float_decompose p
+      | _   -> 0.0)
+    | _             -> 0.0)
+    ) addr builder
+
   in
-  
+ 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
     let global_var m (typ, name, _, _, _, _) =
-          let init = L.const_int (ltype_of_typ typ) 0
-          in StringMap.add name (L.define_global name init the_module) m
-      
+          (match typ with
+          A.Float ->(
+          let init = L.const_float (ltype_of_typ typ) 0.0 (*TODO add float*) 
+          in StringMap.add name (L.define_global name init the_module) m (*TODO add type*)  ) 
+         | _ -> (
+          let init = L.const_int (ltype_of_typ typ) 0 (*TODO add float*)
+          in StringMap.add name (L.define_global name init the_module) m (*TODO add type*)  ) )
       in
     List.fold_left global_var StringMap.empty globals in
 
@@ -78,7 +100,7 @@ let translate (globals, functions) =
   let function_decls =
     let function_decl m fdecl =
       let name = fdecl.A.fname
-      and formal_types =
+      and formal_types = 
 	Array.of_list (List.map (fun (t,_, _, _) -> ltype_of_typ t) fdecl.A.formals)
       in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
@@ -102,8 +124,11 @@ let translate (globals, functions) =
 	    StringMap.add name local m
         | A.Array -> L.set_value_name name p;
             let size_s = (match size with
-              A.Primary(A.Literal(s)) -> L.const_int i32_t s
-            | _ -> L.const_int i32_t 0) in
+                A.Primary p -> (match p with
+                   A.IntLit(i) -> L.const_int i32_t i 
+                 | A.FloatLit(f) -> L.const_float f32_t f
+                 | _ -> L.const_int i32_t 0 )
+              | _ -> L.const_int i32_t 0) in
 	    let local = L.build_array_alloca (ltype_of_typ typ) size_s name builder in
 	    ignore (L.build_store p local builder);
 	    StringMap.add name local m
@@ -113,12 +138,13 @@ let translate (globals, functions) =
         let addr = (match decl with
           A.Primitive -> L.build_alloca typ'
         | A.Array     -> L.build_array_alloca typ' (match size with
-            A.Primary(A.Literal(s)) -> L.const_int typ' s
+            A.Primary(A.IntLit(s)) -> L.const_int typ' s
           | _                       -> L.const_int i32_t 0)
         ) name builder in
         (match decl with
-          A.Primitive ->
-            ignore(store_primitive addr typ' assign values builder)
+          A.Primitive -> (match typ with 
+             A.Float -> ignore(store_float_primitive addr typ' assign values builder)
+            | _ ->  ignore(store_primitive addr typ' assign values builder))
         | A.Array     ->
             ignore(List.fold_left (fun index _vals ->
             ignore(store_array_idx addr index typ' assign _vals builder);index+1) 0 values)
@@ -145,7 +171,8 @@ let translate (globals, functions) =
 
     (*Construct code for literal primary values; return its value*)
     let primary builder = function
-      A.Literal i -> L.const_int i32_t i
+      A.IntLit i -> L.const_int i32_t i
+    | A.FloatLit f -> L.const_float f32_t f 
     | A.CharLit c -> L.const_int i32_t (int_of_char c)
     | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
     | A.Lvalue lv -> lvalue builder lv            
@@ -182,7 +209,7 @@ let translate (globals, functions) =
           (match opDir with
             A.Pre  -> expr builder (A.Assign(lv, (match op with
               A.PlusPlus   -> A.AssnAdd
-            | A.MinusMinus -> A.AssnSub), (A.Primary (A.Literal 1))))
+            | A.MinusMinus -> A.AssnSub), (A.Primary (A.IntLit 1))))
           | A.Post ->
               let lv' = lvalue builder lv in
              ignore(expr builder (A.Crement(A.Pre, op, lv))); lv'

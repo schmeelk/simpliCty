@@ -53,14 +53,18 @@ rule token = parse
 | "continue" { CONTINUE }
 | "return" { RETURN }
 | "int"    { INT }
+| "float"  { FLOAT }
 | "char"   { INT }
 | "bool"   { BOOL }
 | "void"   { VOID }
 | "true"   { TRUE }
 | "false"  { FALSE }
-| ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
+| ['0'-'9']+ as lxm { INTLIT(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
-| '\''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']*'\'' as lxm { LITERAL(int_of_char lxm.[1]) }
+| '\''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']*'\'' as lxm { INTLIT(int_of_char lxm.[1]) }
+| ['+' '-']?['0'-'9']*'.'['0' '9']* as lxm { FLOATLIT(float_of_string lxm) }
+| ['+' '-']?['0'-'9']['.']?['0'-'9']*'e'['-' '+']?['0' '9']* as lxm { FLOATLIT(float_of_string lxm) }
+| ['+' '-']?['0'-'9']*'e'['-' '+']?['0' '9']* as lxm { FLOATLIT(float_of_string lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 

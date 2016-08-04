@@ -2,6 +2,9 @@ float f;
 
 int main( ) {
    int i;
+   float f;
+   f = 100.0;
+   i = 99;
    return 0;
 }
 
