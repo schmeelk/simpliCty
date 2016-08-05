@@ -96,10 +96,6 @@ let translate (globals, functions) =
   let putchar_t = L.function_type i32_t [| i32_t |] in
   let putchar_func = L.declare_function "putchar" putchar_t the_module in
 
-  (* Declare getchar(), which the getchar built-in function will call *)
-  let getchar_t = L.var_arg_function_type i32_t [| |] in
-  let getchar_func = L.declare_function "getchar" getchar_t the_module in
-
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls =
     let function_decl m fdecl =
@@ -242,9 +238,6 @@ let translate (globals, functions) =
       | A.Call ("putchar", [e]) ->
       L.build_call putchar_func [| (expr builder e) |]
         "putchar" builder
-      | A.Call ("getchar", []) ->
-      L.build_call getchar_func [| |]
-        "getchar" builder
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in

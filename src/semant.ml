@@ -51,8 +51,8 @@ let check (globals, functions) =
   if List.mem "putchar" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function putchar may not be defined")) else ();
 
-  if List.mem "getchar" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function getchar may not be defined")) else ();
+  report_duplicate (fun n -> "duplicate function " ^ n)
+    (List.map (fun fd -> fd.fname) functions);
 
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
@@ -68,10 +68,6 @@ let check (globals, functions) =
      { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, Primary(IntLit(0)))];
        locals = []; body = [] } built_in_decls
   in 
-  let built_in_decls =  StringMap.add "getchar"
-     { typ = Int; fname = "getchar"; formals = [];
-       locals = []; body = [] } built_in_decls
-  in
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
                          built_in_decls functions
   in
