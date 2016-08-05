@@ -19,6 +19,7 @@
 simplicty.native :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
 		simplicty.native
+	mv simplicty.native simplicty
 
 opam :
 	eval `opam config env`	
