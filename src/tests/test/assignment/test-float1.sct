@@ -1,0 +1,11 @@
+int main( ) {
+
+   float f;
+   f = 123.456;
+
+   int i;
+   i = 999;
+
+   return 0;
+}
+

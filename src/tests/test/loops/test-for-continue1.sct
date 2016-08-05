@@ -1,0 +1,16 @@
+int main()
+{
+  int i;
+  int x;
+  for (i = 0 ; i < 5 ; i++ ) {
+     i++;
+     if(i == 9)
+     {
+         continue;
+     }
+     else{
+        x = 9999;
+     }
+  }
+  return 0;
+}

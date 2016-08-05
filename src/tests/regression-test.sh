@@ -39,7 +39,7 @@ Usage() {
     echo "-s    Test scan statements"
     echo "-r    Test array statements"
     echo "-t    Test struct statements"
-    echo "-f    Test fucntion statements"
+    echo "-f    Test function statements"
     echo "-i    Test if statements"
     echo "-o    Test operator statements"
     echo "-g    Test assignment statements"

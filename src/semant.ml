@@ -59,13 +59,13 @@ let check (globals, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.add "print"
-     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
+     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, Primary(IntLit(0)))];
        locals = []; body = [] } (StringMap.singleton "printb"
-     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, Primary(Literal(0)))];
+     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, Primary(IntLit(0)))];
        locals = []; body = [] })
   in
   let built_in_decls =  StringMap.add "putchar"
-     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
+     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, Primary(IntLit(0)))];
        locals = []; body = [] } built_in_decls
   in 
   let built_in_decls =  StringMap.add "getchar"
@@ -117,7 +117,8 @@ let check (globals, functions) =
       | Arr(s,_) -> type_of_identifier s
     in 
     let primary = function
-        Literal _  -> Int
+        IntLit _  -> Int
+      | FloatLit _  -> Float 
       | BoolLit _  -> Bool
       | CharLit _  -> Char
       | Lvalue  lv -> lvalue lv
@@ -194,6 +195,8 @@ let check (globals, functions) =
          | [] -> ()
         in check_block sl
       | Expr e -> ignore (expr e)
+      | Break -> ignore ()    (*TODO: Include outside loop check *)
+      | Continue -> ignore ()  (*TODO: Include outside loop check *)
       | Return e -> let t = expr e in if t = func.typ then () else
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))

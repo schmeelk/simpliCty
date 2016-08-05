@@ -19,6 +19,10 @@
 simplicty.native :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
 		simplicty.native
+	mv simplicty.native simplicty
+
+opam :
+	eval `opam config env`	
 
 # "make clean" removes all generated files
 
@@ -27,6 +31,7 @@ clean :
 	ocamlbuild -clean
 	rm -rf tests/test.log tests/test-output/* simplicty scanner.ml parser.ml parser.mli
 	rm -rf *.cmx *.cmi *.cmo *.cmx *.o
+	clear
 
 # More detailed: build using ocamlc/ocamlopt + ocamlfind to locate LLVM
 

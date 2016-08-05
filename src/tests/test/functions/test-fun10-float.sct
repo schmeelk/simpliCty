@@ -1,0 +1,12 @@
+void foo(float a)
+{
+  a = 88.987;
+}
+
+int main()
+{
+  float f;
+  f = 33.333;
+  foo(f);
+  return 0;
+}

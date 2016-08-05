@@ -18,10 +18,11 @@ open Ast
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID CHAR
+%token RETURN BREAK CONTINUE IF ELSE FOR WHILE INT FLOAT BOOL VOID CHAR
 %token PRINT
-%token <int> LITERAL
+%token <int> INTLIT
 %token <string> ID
+%token <float> FLOATLIT
 %token <char> CHARLIT
 %token EOF
 
@@ -69,22 +70,23 @@ parameter_list:
   | parameter_list COMMA  parameter { $3 :: $1 }
   
 parameter:
-    typ_specifier ID                              { ($1,$2, Primitive, Primary(Literal(0))) }
+    typ_specifier ID                              { ($1,$2, Primitive, Primary(IntLit(0))) }
   | typ_specifier LBRACKET expression RBRACKET ID { ($1,$5, Array,     $3) }
 
 typ_specifier:
-    INT  { Int }
-  | CHAR { Char }
-  | BOOL { Bool }
-  | VOID { Void }
+    INT   { Int }
+  | FLOAT { Float }
+  | CHAR  { Char }
+  | BOOL  { Bool }
+  | VOID  { Void }
 
 declaration_list:
     /* nothing */    { [] }
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-    typ_specifier ID SEMI                              { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnNo,  []) }
-  | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(Literal(0)), DeclAssnYes, [$4]) }
+    typ_specifier ID SEMI                              { ($1, $2, Primitive, Primary(IntLit(0)), DeclAssnNo,  []) }
+  | typ_specifier ID ASSIGNREG primary SEMI            { ($1, $2, Primitive, Primary(IntLit(0)), DeclAssnYes, [$4]) }
   | typ_specifier LBRACKET expression RBRACKET ID SEMI                 { ($1, $5, Array, $3, DeclAssnNo,  []) }
   | typ_specifier LBRACKET expression RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array, $3, DeclAssnYes, $7) }
 
@@ -107,6 +109,8 @@ statement:
   | WHILE LPAREN expression RPAREN statement { While($3, $5) }
   | FOR LPAREN expression_opt SEMI expression SEMI expression_opt RPAREN statement
      { For($3, $5, $7, $9) }
+  | BREAK SEMI             { Break }
+  | CONTINUE SEMI          { Continue }
   | RETURN SEMI            { Return Noexpr }
   | RETURN expression SEMI { Return $2 }
 
@@ -145,15 +149,16 @@ expression:
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
-    LITERAL { Literal($1) }
-  | CHARLIT { CharLit($1) }
-  | TRUE    { BoolLit(true) }
-  | FALSE   { BoolLit(false) }
-  | lvalue  { Lvalue($1) }
+    INTLIT   { IntLit($1) }
+  | FLOATLIT { FloatLit($1) }
+  | CHARLIT  { CharLit($1) }
+  | TRUE     { BoolLit(true) }
+  | FALSE    { BoolLit(false) }
+  | lvalue   { Lvalue($1) }
 
 lvalue:
     ID                           { Id($1) }
-  | ID LBRACKET LITERAL RBRACKET { Arr($1,$3) }
+  | ID LBRACKET INTLIT RBRACKET { Arr($1,$3) }
 
 expression_list_opt:
     /* nothing */ { [] }
