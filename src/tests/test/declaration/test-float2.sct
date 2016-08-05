@@ -1,9 +1,9 @@
-float f;
+float x;
 
 int main( ) {
    int i;
    float f;
-   f = 100.0;
+   x = 0.1e-3;
    i = 99;
    return 0;
 }
