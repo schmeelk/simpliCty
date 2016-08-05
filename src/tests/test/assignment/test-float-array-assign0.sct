@@ -1,0 +1,14 @@
+float f;
+int i;
+int main( ) {
+   int x;
+   float y;
+
+   f = 123.456;
+   i = 999;
+   x = i;
+   y = f;
+
+   return 0;
+}
+
