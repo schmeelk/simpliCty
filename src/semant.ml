@@ -59,13 +59,13 @@ let check (globals, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.add "print"
-     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
+     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, 0)];
        locals = []; body = [] } (StringMap.singleton "printb"
-     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, Primary(Literal(0)))];
+     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, 0)];
        locals = []; body = [] })
   in
   let built_in_decls =  StringMap.add "putchar"
-     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, Primary(Literal(0)))];
+     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, 0)];
        locals = []; body = [] } built_in_decls
   in 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
