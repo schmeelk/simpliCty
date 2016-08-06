@@ -19,7 +19,7 @@ open Ast
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID CHAR
-%token PRINT
+%token PRINT EXTERN
 %token <int> LITERAL
 %token <string> ID
 %token <char> CHARLIT
@@ -27,7 +27,7 @@ open Ast
 
 %nonassoc NOELSE
 %nonassoc ELSE
-%nonassoc PRINT
+%nonassoc PRINT EXTERN
 %right ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %right ASSIGNREG
 %left OR
@@ -48,9 +48,10 @@ program:
   modul_definitions EOF { $1 }
 
 modul_definitions:
-   /* nothing */ { [], [] }
- | modul_definitions declaration     { ($2 :: fst $1), snd $1 }
- | modul_definitions func_definition { fst $1, ($2 :: snd $1) }
+    /* nothing */ { [], [], [] }
+ | modul_definitions declaration     { let (a, b, c) = $1 in ($2 :: a), b, c }
+ | modul_definitions extern_func_decl { let (a, b, c) = $1 in a, ($2 :: b), c }
+ | modul_definitions func_definition { let (a, b, c) = $1 in a, b, ($2 :: c) }
 
 func_definition:
    typ_specifier ID LPAREN parameter_list_opt RPAREN LBRACE declaration_list statement_list RBRACE
@@ -59,6 +60,12 @@ func_definition:
 	 formals = $4;
 	 locals = List.rev $7;
 	 body = List.rev $8 } }
+
+extern_func_decl:
+   EXTERN typ_specifier ID LPAREN parameter_list_opt RPAREN SEMI
+     { { e_typ = $2;
+	 e_fname = $3;
+	 e_formals = $5 } }
 
 parameter_list_opt:
     /* nothing */ { [] }

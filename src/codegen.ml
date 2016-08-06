@@ -24,7 +24,7 @@ module L = Llvm
 module A = Ast
 module StringMap = Map.Make(String)
 
-let translate (globals, functions) =
+let translate (globals, externs, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
   and i32_t  = L.i32_type  context
@@ -87,7 +87,22 @@ let translate (globals, functions) =
       in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
-  
+
+  let extern_decls = List.fold_left (fun ed e ->
+     { A.typ = e.A.e_typ; A.fname = e.A.e_fname; A.formals = e.A.e_formals;
+       A.locals = []; A.body = [] } :: ed)
+                         [] externs
+  in
+
+  let function_decls =
+    let function_decl m fdecl =
+      let name = fdecl.A.fname
+      and formal_types =
+	Array.of_list (List.map (fun (t,_, _, _) -> ltype_of_typ t) fdecl.A.formals)
+      in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
+      StringMap.add name (L.declare_function name ftype the_module, fdecl) m in
+    List.fold_left function_decl function_decls extern_decls in
+
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
     let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
@@ -219,7 +234,8 @@ let translate (globals, functions) =
       L.build_call getchar_func [| |]
         "getchar" builder
       | A.Call (f, act) ->
-         let (fdef, fdecl) = StringMap.find f function_decls in
+         let (fdef, fdecl) = StringMap.find f function_decls
+         in
 	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
 	 let result = (match fdecl.A.typ with A.Void -> ""
                                             | _ -> f ^ "_result") in
