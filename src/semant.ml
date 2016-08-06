@@ -14,7 +14,7 @@ open Ast
 
 module StringMap = Map.Make(String)
 
-let check (globals, functions) =
+let check (globals, externs, functions) =
 
   (* Raise an exception if the given list has a duplicate *)
   let report_duplicate exceptf list =
@@ -71,12 +71,16 @@ let check (globals, functions) =
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
                          built_in_decls functions
   in
-
+  let function_decls = List.fold_left (fun m ed -> StringMap.add ed.e_fname 
+     { typ = ed.e_typ; fname = ed.e_fname; formals = ed.e_formals;
+       locals = []; body = [] } m)
+                         function_decls externs
+  in
   let function_decl s = try StringMap.find s function_decls
        with Not_found -> raise (Failure ("unrecognized function " ^ s))
   in
 
-  let _ = function_decl "main" in (* Ensure "main" is defined *)
+  (*let _ = function_decl "main" in*) (* Ensure "main" is defined *)
 
   let check_function func =
 
