@@ -84,14 +84,11 @@ let translate (globals, functions) =
     let global_var m (typ, name, _, _, assign, values) =
       let typ' = ltype_of_typ typ in
       let init = (match typ with
-        A.Float -> L.const_float
-      | _       -> L.const_int
-      ) typ' (match assign with
-        A.DeclAssnYes -> (match values with [p] -> primary_decompose p | _ -> 0)
-      | _             -> 0
+        A.Float -> L.const_float typ' (match assign with A.DeclAssnYes -> (match values with [p] -> primary_float_decompose p | _ -> 0.0) | _ -> 0.0)
+      | _       -> L.const_int   typ' (match assign with A.DeclAssnYes -> (match values with [p] -> primary_decompose p | _ -> 0) | _ -> 0)
       ) in
-      in
-      StringMap.add name ((L.define_global name init the_module), A.Primitive, 0) m   
+      let addr = L.define_global name init the_module in
+      StringMap.add name (addr, A.Primitive, 0) m   
     in
     List.fold_left global_var StringMap.empty globals in
 
@@ -301,59 +298,65 @@ let translate (globals, functions) =
     (*let dummy_bb = L.append_block context "dummy.toremove.block" the_function in
     let break_builder = dummy_bb and continue_builder = dummy_bb in*)
     let rec stmt (builder, break_bb, cont_bb) = function
-	A.Block sl -> List.fold_left stmt (builder, break_bb, cont_bb) sl
-      | A.Expr e -> ignore (expr builder e); (builder, break_bb, cont_bb)
-      | A.Break -> 
-         ignore(add_terminal builder (L.build_br break_bb));
-         let new_block = L.append_block context "after.break" the_function in
-         let builder = L.builder_at_end context new_block in (builder, break_bb, cont_bb)
-      | A.Continue ->  
-         ignore(add_terminal builder (L.build_br cont_bb));
-         let new_block = L.append_block context "after.cont" the_function in
-         let builder = L.builder_at_end context new_block in (builder, break_bb, cont_bb)
-      | A.Return e -> ignore (match fdecl.A.typ with
-	  A.Void -> L.build_ret_void builder
-	| _ -> L.build_ret (expr builder e) builder); (builder, break_bb, cont_bb)
-      | A.If (predicate, then_stmt, else_stmt) ->
-         let bool_val = expr builder predicate in
-	 let if_merge_bb = L.append_block context "if.else.merge" the_function in
+      A.Block sl ->
+        List.fold_left stmt (builder, break_bb, cont_bb) sl
+    | A.Expr e ->
+        ignore (expr builder e); (builder, break_bb, cont_bb)
+    | A.Break -> 
+        ignore(add_terminal builder (L.build_br break_bb));
+        let new_block = L.append_block context "after.break" the_function in
+        let builder = L.builder_at_end context new_block in (builder, break_bb, cont_bb)
+    | A.Continue ->  
+        ignore(add_terminal builder (L.build_br cont_bb));
+        let new_block = L.append_block context "after.cont" the_function in
+        let builder = L.builder_at_end context new_block in (builder, break_bb, cont_bb)
+    | A.Return e ->
+        ignore (match fdecl.A.typ with
+          A.Void -> L.build_ret_void builder
+        (*TODO throwing away value*)
+        | _      -> L.build_ret (match expr builder e with (p,_,_)->p) builder); (builder, break_bb, cont_bb)
+    | A.If (predicate, then_stmt, else_stmt) ->
+        (*TODO throwing away value*)
+        let bool_val = match expr builder predicate with (p,_,_)->p in
+        let if_merge_bb = L.append_block context "if.else.merge" the_function in
 
-	 let if_then_bb = L.append_block context "if.then" the_function in
-         let b = L.builder_at_end context if_then_bb in
-         let (temp1, _, _) = stmt (b, break_bb, cont_bb) then_stmt in 
-	 ignore(add_terminal temp1 (L.build_br if_merge_bb));
+        let if_then_bb = L.append_block context "if.then" the_function in
+        let b = L.builder_at_end context if_then_bb in
+        let (temp1, _, _) = stmt (b, break_bb, cont_bb) then_stmt in 
+        ignore(add_terminal temp1 (L.build_br if_merge_bb));
 
-	 let if_else_bb = L.append_block context "if.else" the_function in
-         let b = L.builder_at_end context if_else_bb in
-         let (temp1, _, _) = stmt (b, break_bb, cont_bb) else_stmt in
+        let if_else_bb = L.append_block context "if.else" the_function in
+        let b = L.builder_at_end context if_else_bb in
+        let (temp1, _, _) = stmt (b, break_bb, cont_bb) else_stmt in
 
-	 ignore(add_terminal temp1 (L.build_br if_merge_bb));
-	 ignore (L.build_cond_br bool_val if_then_bb if_else_bb builder);
-	 ((L.builder_at_end context if_merge_bb), break_bb, cont_bb)
-      | A.While (predicate, body) ->
-	  let while_pred_bb = L.append_block context "while.cmp.block" the_function in
-	  ignore (L.build_br while_pred_bb builder);
-	  let while_body_bb = L.append_block context "while.body" the_function in
-	  let while_merge_bb = L.append_block context "while.merge.block" the_function in
-          let break_builder = while_merge_bb and continue_builder = while_pred_bb in
-          let b = L.builder_at_end context while_body_bb in
-          let (temp1, _, _) = stmt (b, break_builder, continue_builder) body in
-	  ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
-          (*if(L.fold_left_instrs ~f:(s->is_terminator s) ~init:() temp1)  (*instr_opcode*)
-          then{ 
-	    ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
-          }
-          else{
-	    ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
-          }*)
-	  let pred_builder = L.builder_at_end context while_pred_bb in
-	  let bool_val = expr pred_builder predicate in
-	  ignore (L.build_cond_br bool_val while_body_bb while_merge_bb pred_builder);
-          (*ignore(L.replace_all_uses_with (L.build_br dummy_bb) (L.build_br while_merge_bb));*)
-	  ((L.builder_at_end context while_merge_bb), break_builder, continue_builder)
-      | A.For (e1, e2, e3, body) -> 
-            stmt (builder, break_bb, cont_bb)
-	    ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
+        ignore(add_terminal temp1 (L.build_br if_merge_bb));
+        ignore (L.build_cond_br bool_val if_then_bb if_else_bb builder);
+        ((L.builder_at_end context if_merge_bb), break_bb, cont_bb)
+    | A.While (predicate, body) ->
+        let while_pred_bb = L.append_block context "while.cmp.block" the_function in
+        ignore (L.build_br while_pred_bb builder);
+        let while_body_bb = L.append_block context "while.body" the_function in
+        let while_merge_bb = L.append_block context "while.merge.block" the_function in
+        let break_builder = while_merge_bb and continue_builder = while_pred_bb in
+        let b = L.builder_at_end context while_body_bb in
+        let (temp1, _, _) = stmt (b, break_builder, continue_builder) body in
+        ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
+        (*if(L.fold_left_instrs ~f:(s->is_terminator s) ~init:() temp1)  (*instr_opcode*)
+        then{ 
+          ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
+        }
+        else{
+          ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
+        }*)
+        let pred_builder = L.builder_at_end context while_pred_bb in
+        (*TODO throwing away value*)
+        let bool_val = match expr pred_builder predicate with (p,_,_)->p in
+        ignore (L.build_cond_br bool_val while_body_bb while_merge_bb pred_builder);
+        (*ignore(L.replace_all_uses_with (L.build_br dummy_bb) (L.build_br while_merge_bb));*)
+        ((L.builder_at_end context while_merge_bb), break_builder, continue_builder)
+    | A.For (e1, e2, e3, body) -> 
+        stmt (builder, break_bb, cont_bb)
+        ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in
     (* Build llvm code for each statement in a function *)
     let dummy_bb = L.append_block context "dummy.toremove.block" the_function in
