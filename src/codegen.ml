@@ -132,11 +132,14 @@ let translate (globals, functions) =
 	    ignore(L.build_store p addr builder)
         | A.Array ->
             (*TODO cleanup??*)
-            let new_addr = L.build_in_bounds_gep addr [|L.const_int i32_t 0|] "new" builder
-            and old_addr = L.build_in_bounds_gep p    [|L.const_int i32_t 0|] "old" builder in
-            let old_val = L.build_load old_addr "oldV" builder in
-            ignore(L.build_store old_val new_addr builder)
-        ); StringMap.add name (addr,decl,size) m
+            let rec arrFormal idx =
+            (match idx with -1 -> 0
+            | _ ->
+              let new_addr = L.build_in_bounds_gep addr [|L.const_int i32_t idx|] "new" builder
+              and old_addr = L.build_in_bounds_gep p    [|L.const_int i32_t idx|] "old" builder in
+              let old_val = L.build_load old_addr "oldV" builder in
+              ignore(L.build_store old_val new_addr builder); arrFormal (idx-1)
+            ) in ignore(arrFormal (size-1))); StringMap.add name (addr,decl,size) m
       in
       let add_local m (typ, name, decl, size, assign, values) =
         let typ' = ltype_of_typ typ
