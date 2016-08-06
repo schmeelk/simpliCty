@@ -91,7 +91,7 @@ let translate (globals, externs, functions) =
       | _             -> 0
       ) in
       in
-      StringMap.add name ((L.define_global name init the_module), A.Primitive, A.Primary(A.Literal(0))) m   
+      StringMap.add name ((L.define_global name init the_module), A.Primitive, 0) m   
     in
     List.fold_left global_var StringMap.empty globals in
 
@@ -172,15 +172,16 @@ let translate (globals, externs, functions) =
       (fun (a,_,_) -> a)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-    (*and lookup_decl n =
+    and lookup_decl n =
       (fun (_,b,_) -> b)
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
     and lookup_size n =
-      (fun (_,_,c) -> c)
+      let (_,_,c) =
       (try StringMap.find n local_vars
          with Not_found -> StringMap.find n global_vars)
-    *)in
+      in c
+    in
     (*Construct code for lvalues; return value pointed to*)
     
     (*TODO ADAM: FIX TO ONLY SEND POINTER *)
@@ -211,10 +212,11 @@ let translate (globals, externs, functions) =
     (*Construct code for literal primary values; return its value*)
  
     let primary builder = function
-      A.Literal i -> (L.const_int i32_t i                       , A.Primitive, 0)
-    | A.CharLit c -> (L.const_int i32_t (int_of_char c)         , A.Primitive, 0)
-    | A.BoolLit b -> (L.const_int i1_t (if b then 1 else 0)     , A.Primitive, 0)
-    | A.Lvalue lv ->
+      A.IntLit i   -> (L.const_int i32_t i                       , A.Primitive, 0)
+    | A.FloatLit f -> (L.const_float f32_t f                     , A.Primitive, 0)
+    | A.CharLit c  -> (L.const_int i32_t (int_of_char c)         , A.Primitive, 0)
+    | A.BoolLit b  -> (L.const_int i1_t (if b then 1 else 0)     , A.Primitive, 0)
+    | A.Lvalue lv  ->
         let (value, decl, size) = lvalue builder lv in
         (match decl with
           A.Primitive -> (L.build_load value "lv" builder, decl, size)
