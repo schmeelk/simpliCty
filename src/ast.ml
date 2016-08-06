@@ -47,9 +47,9 @@ type expr =
   | Call of string * expr list
   | Noexpr
 
-type parameter = typ * string * decl * expr
+type parameter = typ * string * decl * int
 
-type declaration = typ * string * decl * expr * decl_assn * (primary list)
+type declaration = typ * string * decl * int * decl_assn * (primary list)
 
 type stmt =
     Block of stmt list
