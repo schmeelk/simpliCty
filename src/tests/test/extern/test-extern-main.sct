@@ -1,0 +1,9 @@
+extern int add(int a, int b);
+int main()
+{
+  int a = 1;
+  int b = 'A';
+  int c = 0;
+  c = add(a, b);
+  putchar(c);
+}
