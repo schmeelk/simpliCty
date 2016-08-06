@@ -80,6 +80,7 @@ let translate (globals, functions) =
   in
  
   (* Declare each global variable; remember its value in a map *)
+  (*TODO-ADAM: global scoped arrays*)
   let global_vars =
     let global_var m (typ, name, _, _, assign, values) =
       let typ' = ltype_of_typ typ in
@@ -131,7 +132,7 @@ let translate (globals, functions) =
           A.Primitive ->
 	    ignore(L.build_store p addr builder)
         | A.Array ->
-            (*TODO cleanup??*)
+            (*TODO-ADAM: pass full arrays?*)
             let rec arrFormal idx =
             (match idx with -1 -> 0
             | _ ->
@@ -178,7 +179,6 @@ let translate (globals, functions) =
     in
     (*Construct code for lvalues; return value pointed to*)
     
-    (*TODO ADAM: FIX TO ONLY SEND POINTER *)
     let lvalue builder = function
       A.Id(s)    ->
          let addr = lookup_addr s
@@ -193,17 +193,9 @@ let translate (globals, functions) =
         let s' = lookup_addr s
         and decl = lookup_decl s
         and i' = L.const_int i32_t i in
-        let addr = L.build_in_bounds_gep s' [|i'|] "twomp" builder in
+        let addr = L.build_in_bounds_gep s' [|i'|] "arr" builder in
         (addr, decl, 0,0)
-    in
-    
-    (*TODO ADAM: lvalue_array_idx makes codegen that load arrayIdx value*)
-    (*let lvalue_array_idx builder addr pos =
-      let pos'  = L.const_int i32_t i in
-      let addr' = L.build_in_bounds_gep addr [|pos'|] "tmp" builder in
-      L.build_load addr' "arrIdxLoad" builder
-    *)
-    (*Construct code for literal primary values; return its value*)
+    in    
  
     let primary builder = function
       A.IntLit i   -> (L.const_int i32_t i                       , A.Primitive, 0)
@@ -227,11 +219,11 @@ let translate (globals, functions) =
           let e1' = match (expr builder e1) with
             (c , A.Primitive,_) -> c
           | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
-            (*TODO this is a dummy for array math*)
+            (*TODO-ADAM: this is a dummy for array math*)
 	  and e2' = match (expr builder e2) with
             (c , A.Primitive,_) -> c
           | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
-            (*TODO this is a dummy for array math*)
+            (*TODO-ADAM: this is a dummy for array math*)
           in
 	  ((match op with
 	    A.Add     -> L.build_add
@@ -252,7 +244,7 @@ let translate (globals, functions) =
           let e' = match (expr builder e) with
             (c , A.Primitive,_) -> c 
           | (p , _,_) -> L.const_inttoptr p (L.pointer_type i32_t)
-            (*TODO ADAM: lvalue_array_idx does codegen here*)
+            (*TODO-ADAM: lvalue_array_idx does codegen here*)
           in
 	  ((match op with
 	    A.Neg     -> L.build_neg
@@ -263,7 +255,7 @@ let translate (globals, functions) =
               A.PlusPlus   -> A.AssnAdd
             | A.MinusMinus -> A.AssnSub), (A.Primary (A.IntLit 1))))
           | A.Post ->
-              (* TODO THROWING AWAY VALUE*)
+              (* TODO-ADAM: THROWING AWAY VALUE*)
               let (value, decl,_,_) = lvalue builder lv in
               ignore(expr builder (A.Crement(A.Pre, op, lv))); (value, decl, 0)
           )
@@ -297,7 +289,7 @@ let translate (globals, functions) =
            match expr builder a with (p,_,_)->p) (List.rev act)) in
 	 let result = (match fdecl.A.typ with A.Void -> ""
                                             | _ -> f ^ "_result") in
-         (* TODO convert fdecl.A.typ to A.decl *)
+         (* TODO-ADAM: convert fdecl.A.typ to A.decl *)
          (L.build_call fdef (Array.of_list actuals) result builder, A.Primitive, 0)
     in
 
@@ -327,10 +319,10 @@ let translate (globals, functions) =
     | A.Return e ->
         ignore (match fdecl.A.typ with
           A.Void -> L.build_ret_void builder
-        (*TODO throwing away value*)
+        (*TODO-ADAM: throwing away value*)
         | _      -> L.build_ret (match expr builder e with (p,_,_)->p) builder); (builder, break_bb, cont_bb)
     | A.If (predicate, then_stmt, else_stmt) ->
-        (*TODO throwing away value*)
+        (*TODO-ADAM: throwing away value*)
         let bool_val = match expr builder predicate with (p,_,_)->p in
         let if_merge_bb = L.append_block context "if.else.merge" the_function in
 
@@ -363,7 +355,7 @@ let translate (globals, functions) =
           ignore(add_terminal temp1 (L.build_br while_pred_bb)); 
         }*)
         let pred_builder = L.builder_at_end context while_pred_bb in
-        (*TODO throwing away value*)
+        (*TODO-ADAM: throwing away value*)
         let bool_val = match expr pred_builder predicate with (p,_,_)->p in
         ignore (L.build_cond_br bool_val while_body_bb while_merge_bb pred_builder);
         (*ignore(L.replace_all_uses_with (L.build_br dummy_bb) (L.build_br while_merge_bb));*)
