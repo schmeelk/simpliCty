@@ -101,7 +101,12 @@ let translate (globals, externs, functions) =
     let function_decl m fdecl =
       let name = fdecl.A.fname
       and formal_types = 
-	Array.of_list (List.map (fun (t,_, _, _) -> ltype_of_typ t) fdecl.A.formals)
+	Array.of_list (List.map
+          (fun (t,_, decl, _) ->
+             (match decl with
+               A.Primitive -> ltype_of_typ t
+             | A.Array -> L.pointer_type (ltype_of_typ t)))
+        fdecl.A.formals)
       in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
@@ -141,7 +146,11 @@ let translate (globals, externs, functions) =
           A.Primitive ->
 	    ignore(L.build_store p addr builder)
         | A.Array ->
-            ignore(L.build_store p addr builder)
+            (*TODO cleanup??*)
+            let new_addr = L.build_in_bounds_gep addr [|L.const_int i32_t 0|] "new" builder
+            and old_addr = L.build_in_bounds_gep p    [|L.const_int i32_t 0|] "old" builder in
+            let old_val = L.build_load old_addr "oldV" builder in
+            ignore(L.build_store old_val new_addr builder)
         ); StringMap.add name (addr,decl,size) m
       in
       let add_local m (typ, name, decl, size, assign, values) =
@@ -188,16 +197,16 @@ let translate (globals, externs, functions) =
          and decl = lookup_decl s in
          (match decl with
            A.Primitive -> 
-            (addr, decl, 0)
+            (addr, decl, 0,0)
          | A.Array     ->
-            (addr, decl, (lookup_size s))
+            (addr, decl, (lookup_size s),1)
          )
     | A.Arr(s,i) ->
         let s' = lookup_addr s
         and decl = lookup_decl s
         and i' = L.const_int i32_t i in
-        let addr = L.build_in_bounds_gep s' [|i'|] "tmp" builder in
-        (addr, decl, 0)
+        let addr = L.build_in_bounds_gep s' [|i'|] "twomp" builder in
+        (addr, decl, 0,0)
     in
     
     (*TODO ADAM: lvalue_array_idx makes codegen that load arrayIdx value*)
@@ -214,10 +223,12 @@ let translate (globals, externs, functions) =
     | A.CharLit c  -> (L.const_int i32_t (int_of_char c)         , A.Primitive, 0)
     | A.BoolLit b  -> (L.const_int i1_t (if b then 1 else 0)     , A.Primitive, 0)
     | A.Lvalue lv  ->
-        let (value, decl, size) = lvalue builder lv in
+        let (value, decl, size,is_arr) = lvalue builder lv in
         (match decl with
           A.Primitive -> (L.build_load value "lv" builder, decl, size)
-        | A.Array ->     (L.const_ptrtoint value i32_t, decl, size))
+        | A.Array     -> if is_arr = 1
+            then (value, decl, size)
+            else (L.build_load value "lv" builder, decl, size))
     in
 
     (* Construct code for an expression; return its value *)
@@ -265,7 +276,7 @@ let translate (globals, externs, functions) =
             | A.MinusMinus -> A.AssnSub), (A.Primary (A.IntLit 1))))
           | A.Post ->
               (* TODO THROWING AWAY VALUE*)
-              let (value, decl,_) = lvalue builder lv in
+              let (value, decl,_,_) = lvalue builder lv in
               ignore(expr builder (A.Crement(A.Pre, op, lv))); (value, decl, 0)
           )
       | A.Assign (lv, op, e) ->
