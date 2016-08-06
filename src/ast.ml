@@ -51,6 +51,8 @@ type parameter = typ * string * decl * expr
 
 type declaration = typ * string * decl * expr * decl_assn * (primary list)
 
+type function_declaration = typ * string * decl * expr
+
 type stmt =
     Block of stmt list
   | Expr of expr
@@ -61,6 +63,12 @@ type stmt =
   | For of expr * expr * expr * stmt
   | While of expr * stmt
 
+type extern_func_decl = {
+    e_typ : typ;
+    e_fname : string;
+    e_formals : parameter list;
+  }
+
 type func_decl = {
     typ : typ;
     fname : string;
@@ -69,7 +77,7 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = declaration list * func_decl list
+type program = declaration list * extern_func_decl list * func_decl list
 
 (* Pretty-printing functions *)
 
@@ -173,6 +181,12 @@ let string_of_fdecl fdecl =
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (vars, funcs) =
+let string_of_extern_fdecl efdecl =
+  string_of_typ efdecl.e_typ ^ " " ^
+  efdecl.e_fname ^ "(" ^ String.concat ", " (List.map snd_of_four efdecl.e_formals) ^
+  ");\n"
+
+let string_of_program (vars, externs, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
+  String.concat "\n" (List.map string_of_extern_fdecl externs) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)
