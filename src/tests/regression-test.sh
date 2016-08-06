@@ -17,7 +17,7 @@ LLI="lli"
 
 # Path to the simpliCty compiler.  Usually "./simplicty.native"
 # Try "_build/simplicty.native" if ocamlbuild was unable to create a symbolic link.
-SIMPLICTY="../simplicty.native"
+SIMPLICTY="../simplicty"
 
 # Set time limit for all operations
 ulimit -t 30
