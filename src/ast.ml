@@ -53,6 +53,8 @@ type declaration = typ * string * decl * int * decl_assn * (primary list)
 
 type function_declaration = typ * string * decl * expr
 
+type function_declaration = typ * string * decl * expr
+
 type stmt =
     Block of stmt list
   | Expr of expr
