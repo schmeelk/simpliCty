@@ -1,0 +1,12 @@
+int foo(float a)
+{
+  return a;
+}
+
+int main()
+{
+  float a;
+  a = 42.0;
+  a = a + 5.4;
+  return 0;
+}

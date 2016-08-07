@@ -1,0 +1,10 @@
+int add(float x, float y)
+{
+  return x + y;
+}
+
+int main()
+{
+  add(17.8, 25.4) ;
+  return 0;
+}

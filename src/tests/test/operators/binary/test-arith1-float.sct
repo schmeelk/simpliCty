@@ -1,0 +1,6 @@
+int main()
+{
+  float f;
+  f = 39.0 + 3.6;
+  return 0;
+}
