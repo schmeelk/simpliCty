@@ -1,0 +1,9 @@
+char[3] a = {'a','b','c'};
+
+int main()
+{
+	putchar(a[0]);
+	putchar(a[1]);
+	putchar(a[2]);
+	return 0;
+}

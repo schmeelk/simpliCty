@@ -102,7 +102,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.out" &&
-    Run "$SIMPLICTY" "<" $1 ">" "${dirout}${basename}.ll" &&
+    Run "$SIMPLICTY" $1 ">" "${dirout}${basename}.ll" &&
     Run "$LLI" "${dirout}${basename}.ll" ">" "${dirout}${basename}.out" &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -136,7 +136,7 @@ CheckFail() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.err ${basename}.diff" &&
-    RunFail "$SIMPLICTY" "<" $1 "2>" "${dirout}${basename}.err" ">>" $globallog &&
+    RunFail "$SIMPLICTY" $1 "2>" "${dirout}${basename}.err" ">>" $globallog &&
     Compare ${basename}.err ${reffile}.err ${basename}.diff
 
     # Report the status and clean up the generated files
