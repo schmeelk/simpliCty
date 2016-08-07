@@ -82,14 +82,36 @@ let translate (globals, externs, functions) =
   (* Declare each global variable; remember its value in a map *)
   (*TODO-ADAM: global scoped arrays*)
   let global_vars =
-    let global_var m (typ, name, _, _, assign, values) =
+    let global_var m (typ, name, decl, size, assign, values) =
       let typ' = ltype_of_typ typ in
-      let init = (match typ with
-        A.Float -> L.const_float typ' (match assign with A.DeclAssnYes -> (match values with [p] -> primary_float_decompose p | _ -> 0.0) | _ -> 0.0)
-      | _       -> L.const_int   typ' (match assign with A.DeclAssnYes -> (match values with [p] -> primary_decompose p | _ -> 0) | _ -> 0)
+      let init = (match decl with
+        A.Primitive -> (match typ with
+          A.Float ->
+            L.const_float typ' (match assign with
+              A.DeclAssnYes -> primary_float_decompose (List.hd values)
+            | _ -> 0.0)
+        | _       ->
+            L.const_int   typ' (match assign with
+              A.DeclAssnYes -> primary_decompose (List.hd values)
+            | _ -> 0)
+        )
+      | A.Array ->
+          let values' = List.map (fun v -> 
+            (match typ with
+              A.Float ->
+                L.const_float typ' (match assign with
+                  A.DeclAssnYes -> primary_float_decompose v
+                | _ -> 0.0)
+            | _ ->
+                L.const_int typ' (match assign with
+                  A.DeclAssnYes -> primary_decompose v
+                | _ -> 0)
+            )
+          ) values in
+          L.const_array typ' (Array.of_list values')
       ) in
       let addr = L.define_global name init the_module in
-      StringMap.add name (addr, A.Primitive, 0) m   
+      StringMap.add name (addr, decl, size) m   
     in
     List.fold_left global_var StringMap.empty globals in
 
@@ -207,8 +229,8 @@ let translate (globals, externs, functions) =
     | A.Arr(s,i) ->
         let s' = lookup_addr s
         and decl = lookup_decl s
-        and i' = L.const_int i32_t i in
-        let addr = L.build_in_bounds_gep s' [|i'|] "arr" builder in
+        and i' = [|L.const_int i32_t 0; L.const_int i32_t i|] in
+        let addr = L.build_gep s' i' "arr" builder in
         (addr, decl, 0,0)
     in    
  
