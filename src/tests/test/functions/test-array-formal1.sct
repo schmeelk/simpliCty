@@ -1,0 +1,23 @@
+
+void pront(char[] str, int size)
+{
+	putchar(str[0]);
+	putchar(str[1]);
+	putchar(str[2]);
+	putchar(str[3]);
+	putchar(str[4]);
+	putchar(str[5]);
+	if(size == 7) putchar(str[6]);
+	return;
+}
+
+int main()
+{
+	char[6] a = {'H','e','l','l','o',10};
+        char[7] b = {'W','o','r','l','d','!',10};
+	int c = 6;
+	int d = 7;
+        pront(a,c);
+	pront(b,d);
+	return 0;
+}

@@ -56,24 +56,20 @@ let translate (globals, externs, functions) =
   (* Store memory *) 
   let store_primitive addr typ' assign value builder =
     L.build_store (L.const_int typ' (match assign with
-      A.DeclAssnYes -> (match value with
-        [p] -> primary_decompose p
-      | _   -> 0)
+      A.DeclAssnYes -> primary_decompose (List.hd value)
     | _             -> 0)
     ) addr builder
   and store_array_idx addr index typ' assign value builder =
-    let i  = L.const_int i32_t index
+    let i  = [|L.const_int i32_t index|]
     and v' = L.const_int typ' (match assign with
       A.DeclAssnYes -> primary_decompose value
     | _             -> 0)
     in
-    let addr' = L.build_in_bounds_gep addr [|i|] "tmp" builder in
+    let addr' = L.build_in_bounds_gep addr i "tmp" builder in
     L.build_store v' addr' builder
   and store_float_primitive addr typ' assign value builder =
     L.build_store (L.const_float typ' (match assign with
-      A.DeclAssnYes -> (match value with
-        [p] -> primary_float_decompose p
-      | _   -> 0.0)
+      A.DeclAssnYes -> primary_float_decompose (List.hd value)
     | _             -> 0.0)
     ) addr builder
 
@@ -84,31 +80,15 @@ let translate (globals, externs, functions) =
   let global_vars =
     let global_var m (typ, name, decl, size, assign, values) =
       let typ' = ltype_of_typ typ in
-      let init = (match decl with
-        A.Primitive -> (match typ with
-          A.Float ->
-            L.const_float typ' (match assign with
-              A.DeclAssnYes -> primary_float_decompose (List.hd values)
-            | _ -> 0.0)
-        | _       ->
-            L.const_int   typ' (match assign with
-              A.DeclAssnYes -> primary_decompose (List.hd values)
-            | _ -> 0)
+      let init_val v =
+        (match typ with
+           A.Float -> L.const_float typ' (match assign with A.DeclAssnYes -> primary_float_decompose v | _ -> 0.0)
+        | _        -> L.const_int   typ' (match assign with A.DeclAssnYes -> primary_decompose v       | _ -> 0)
         )
-      | A.Array ->
-          let values' = List.map (fun v -> 
-            (match typ with
-              A.Float ->
-                L.const_float typ' (match assign with
-                  A.DeclAssnYes -> primary_float_decompose v
-                | _ -> 0.0)
-            | _ ->
-                L.const_int typ' (match assign with
-                  A.DeclAssnYes -> primary_decompose v
-                | _ -> 0)
-            )
-          ) values in
-          L.const_array typ' (Array.of_list values')
+      in
+      let init = (match decl with
+        A.Primitive -> init_val (List.hd values)
+      | A.Array     -> L.const_array typ' (Array.of_list (List.map init_val values))
       ) in
       let addr = L.define_global name init the_module in
       StringMap.add name (addr, decl, size) m   
@@ -120,17 +100,19 @@ let translate (globals, externs, functions) =
   let putchar_func = L.declare_function "putchar" putchar_t the_module in
 
   (* Define each function (arguments and return type) so we can call it *)
+  (*L.pointer_type (ltype_of_typ t)*)
+  let param_type (typ,_,decl,_) =
+    (match decl with
+      A.Primitive -> ltype_of_typ typ
+    | A.Array     -> L.pointer_type (ltype_of_typ typ)
+    )
+  in 
   let function_decls =
     let function_decl m fdecl =
       let name = fdecl.A.fname
-      and formal_types = 
-	Array.of_list (List.map
-          (fun (t,_, decl, _) ->
-             (match decl with
-               A.Primitive -> ltype_of_typ t
-             | A.Array -> L.pointer_type (ltype_of_typ t)))
-        fdecl.A.formals)
-      in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
+      and formal_types = Array.of_list (List.map param_type fdecl.A.formals)
+      in
+      let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
 
@@ -162,22 +144,25 @@ let translate (globals, externs, functions) =
         L.set_value_name name p;
         let typ' = ltype_of_typ typ
         and size' = L.const_int i32_t size in
-        let addr = (match decl with
-          A.Primitive -> L.build_alloca typ'
-        | A.Array     -> L.build_array_alloca typ' size') name builder in
         (match decl with
           A.Primitive ->
-	    ignore(L.build_store p addr builder)
+            let addr = L.build_alloca typ' name builder in
+	    ignore(L.build_store p addr builder); StringMap.add name (addr,decl,size) m
         | A.Array ->
-            (*TODO-ADAM: pass full arrays?*)
-            let rec arrFormal idx =
+            if size <> 0 then
+              let addr = L.build_array_alloca typ' size' name builder in
+              ignore(L.build_store p addr builder); StringMap.add name (addr,decl,size) m
+            else
+              StringMap.add name (p,decl,size) m
+            (*let rec arrFormal idx =
             (match idx with -1 -> 0
             | _ ->
-              let new_addr = L.build_in_bounds_gep addr [|L.const_int i32_t idx|] "new" builder
-              and old_addr = L.build_in_bounds_gep p    [|L.const_int i32_t idx|] "old" builder in
+              let idx' = [|L.const_int i32_t idx|] in
+              let new_addr = L.build_in_bounds_gep addr idx' "new" builder
+              and old_addr = L.build_in_bounds_gep p    idx' "old" builder in
               let old_val = L.build_load old_addr "oldV" builder in
               ignore(L.build_store old_val new_addr builder); arrFormal (idx-1)
-            ) in ignore(arrFormal (size-1))); StringMap.add name (addr,decl,size) m
+            ) in ignore(arrFormal (size-1))*))
       in
       let add_local m (typ, name, decl, size, assign, values) =
         let typ' = ltype_of_typ typ
@@ -229,7 +214,7 @@ let translate (globals, externs, functions) =
     | A.Arr(s,i) ->
         let s' = lookup_addr s
         and decl = lookup_decl s
-        and i' = [|L.const_int i32_t 0; L.const_int i32_t i|] in
+        and i' = [|L.const_int i32_t i|] in
         let addr = L.build_gep s' i' "arr" builder in
         (addr, decl, 0,0)
     in    
@@ -302,8 +287,8 @@ let translate (globals, externs, functions) =
             A.Id(s)    -> lookup_addr s
           | A.Arr(s,i) ->
               let s' = lookup_addr s
-              and i' = L.const_int i32_t i in
-              L.build_in_bounds_gep s' [|i'|] "tmp" builder) in
+              and i' = [|L.const_int i32_t 0; L.const_int i32_t i|] in
+              L.build_in_bounds_gep s' i' "tmp" builder) in
           let eval = (match op with
             A.AssnReg     -> expr builder e
           | A.AssnAdd     -> expr builder (A.Binop(value, A.Add,  e))

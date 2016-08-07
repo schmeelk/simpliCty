@@ -78,6 +78,7 @@ parameter_list:
   
 parameter:
     typ_specifier ID                          { ($1,$2, Primitive,  0) }
+  | typ_specifier LBRACKET RBRACKET ID        { ($1,$4, Array,      0) }
   | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     $3) }
 
 typ_specifier:
