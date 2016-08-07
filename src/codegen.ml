@@ -126,7 +126,7 @@ let translate (globals, externs, functions) =
     let function_decl m fdecl =
       let name = fdecl.A.fname
       and formal_types =
-	Array.of_list (List.map (fun (t,_, _, _) -> ltype_of_typ t) fdecl.A.formals)
+	Array.of_list (List.map param_type fdecl.A.formals)
       in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
       StringMap.add name (L.declare_function name ftype the_module, fdecl) m in
     List.fold_left function_decl function_decls extern_decls in
@@ -151,18 +151,19 @@ let translate (globals, externs, functions) =
         | A.Array ->
             if size <> 0 then
               let addr = L.build_array_alloca typ' size' name builder in
-              ignore(L.build_store p addr builder); StringMap.add name (addr,decl,size) m
+              let rec arrFormal idx = (match idx with
+               -1 -> 0
+              | _ ->
+                  let idx' = [|L.const_int i32_t idx|] in
+                  let new_addr = L.build_in_bounds_gep addr idx' "new" builder
+                  and old_addr = L.build_in_bounds_gep p    idx' "old" builder in
+                  let old_val = L.build_load old_addr "oldV" builder in
+                  ignore(L.build_store old_val new_addr builder); arrFormal (idx-1)
+              )
+              in ignore(arrFormal (size-1)); StringMap.add name (addr,decl,size) m
             else
               StringMap.add name (p,decl,size) m
-            (*let rec arrFormal idx =
-            (match idx with -1 -> 0
-            | _ ->
-              let idx' = [|L.const_int i32_t idx|] in
-              let new_addr = L.build_in_bounds_gep addr idx' "new" builder
-              and old_addr = L.build_in_bounds_gep p    idx' "old" builder in
-              let old_val = L.build_load old_addr "oldV" builder in
-              ignore(L.build_store old_val new_addr builder); arrFormal (idx-1)
-            ) in ignore(arrFormal (size-1))*))
+        )
       in
       let add_local m (typ, name, decl, size, assign, values) =
         let typ' = ltype_of_typ typ

@@ -1,0 +1,18 @@
+void pront(char[] str, char[3] ing)
+{
+	putchar(str[0]);
+	putchar(str[1]);
+	putchar(str[2]);
+	putchar(ing[0]);
+	putchar(ing[1]);
+	putchar(ing[2]);
+	return;
+}
+
+int main()
+{
+	char[3] x = {'h','e','l'};
+	char[3] y = {'l','o',10};
+	pront(x,y);
+	return 0;
+}
