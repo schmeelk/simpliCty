@@ -112,21 +112,17 @@ let check (globals, externs, functions) =
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
     
-    let lvalue = function
-        Id(s)    -> type_of_identifier s
-      (*| Arr(s,_) -> type_of_identifier s*)
-    in 
     let primary = function
         IntLit _  -> Int
       | FloatLit _  -> Float 
       | BoolLit _  -> Bool
       | CharLit _  -> Char
-      | Lvalue  lv -> lvalue lv
+      | Lvalue Id(s) -> type_of_identifier s
     in
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
         Primary p -> primary p
-      | Lvarr(lv,_) -> lvalue lv (*TODO-ADAM: semantic checking here*)
+      | Lvarr(Id(s),_) -> type_of_identifier s (*TODO-ADAM: semantic checking*)
       | Binop(e1, op, e2) as e ->
           let t1 = expr e1
           and t2 = expr e2 in
@@ -140,8 +136,8 @@ let check (globals, externs, functions) =
               string_of_typ t2 ^" in "^ string_of_expr e
             ))
           )
-      | Unop(op, e) as ex ->
-          let t = expr e in
+      | Unop(op, e_lv) as ex ->
+          let t = expr e_lv in
 	  (match op with
 	    Neg when t = Int  -> Int
 	  | Not when t = Bool -> Bool
@@ -150,8 +146,8 @@ let check (globals, externs, functions) =
 	  		   string_of_typ t ^" in "^ string_of_expr ex
             ))
           )
-      | Crement(opDir, op, lv) as ex ->
-          let t = lvalue lv in
+      | Crement(opDir, op, e_lv) as ex ->
+          let t = expr e_lv in
           (match op with
             _ when t = Int -> Int
           | _              -> raise (Failure (
@@ -160,8 +156,8 @@ let check (globals, externs, functions) =
             ))
           )
       | Noexpr -> Void
-      | Assign(lv, op, e) as ex ->
-          let lt = lvalue lv
+      | Assign(e_lv, op, e) as ex ->
+          let lt = expr e_lv
           and rt = expr e in
 	  (match op with
             _ -> check_assign lt rt (Failure (

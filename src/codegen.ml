@@ -200,45 +200,28 @@ let translate (globals, externs, functions) =
          with Not_found -> StringMap.find n global_vars)
       in c
     in
-    (*Construct code for lvalues; return value pointed to*)
-    
-    let lvalue = function
-      A.Id(s)    ->
-         let addr = lookup_addr s
-         and decl = lookup_decl s in
-         (match decl with
-           A.Primitive -> 
-            (addr, decl, 0,0)
-         | A.Array     ->
-            (addr, decl, (lookup_size s),1)
-         )
-    (*| A.Arr(s,i) ->
-        let s' = lookup_addr s
-        and decl = lookup_decl s
-        and i' = [|L.const_int i32_t i|] in
-        let addr = L.build_gep s' i' "arr" builder in
-        (addr, decl, 0,0)*)
-    in    
+    (*Construct code for lvalues; return value pointed to*) 
  
     let primary builder = function
       A.IntLit i   -> (L.const_int i32_t i                       , A.Primitive, 0)
     | A.FloatLit f -> (L.const_float f32_t f                     , A.Primitive, 0)
     | A.CharLit c  -> (L.const_int i32_t (int_of_char c)         , A.Primitive, 0)
     | A.BoolLit b  -> (L.const_int i1_t (if b then 1 else 0)     , A.Primitive, 0)
-    | A.Lvalue lv  ->
-        let (value, decl, size,is_arr) = lvalue lv in
+    | A.Lvalue (A.Id(s))  ->
+        let addr = lookup_addr s and decl = lookup_decl s and size = lookup_size s
+        in
         (match decl with
-          A.Primitive -> (L.build_load value "lv" builder, decl, size)
-        | A.Array     -> if is_arr = 1
-            then (value, decl, size)
-            else (L.build_load value "lv" builder, decl, size))
+          A.Primitive -> (L.build_load addr "lv" builder, decl, size)
+        | A.Array     -> (addr, decl, size))
     in
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.Primary p          -> primary builder p
-      | A.Lvarr (lv, e)      ->
-          let (lv',decl,_,_) = lvalue lv
+      | A.Lvarr (A.Id(lv), e)->
+          let lv' = lookup_addr lv
+          and decl = lookup_decl lv
+          (*TODO-ADAM: throwing away values*)
           and (e',_,_) = expr builder e
           in
           let addr = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in
@@ -246,13 +229,9 @@ let translate (globals, externs, functions) =
           (L.build_load addr' "idxIn" builder,decl,0)
       | A.Noexpr             -> (L.const_int i32_t 0, A.Primitive, 0)
       | A.Binop (e1, op, e2) ->
-          let e1' = match (expr builder e1) with
-            (c , _,_) -> c
-            (*TODO-ADAM: this is a dummy for array math*)
-	  and e2' = match (expr builder e2) with
-            (c , _,_) -> c
-            (*TODO-ADAM: this is a dummy for array math*)
-          in
+          (*TODO-ADAM: throwing away values*)
+          let (e1',_,_) = expr builder e1
+	  and (e2',_,_) = expr builder e2 in
 	  ((match op with
 	    A.Add     -> L.build_add
 	  | A.Sub     -> L.build_sub
@@ -268,56 +247,62 @@ let translate (globals, externs, functions) =
 	  | A.Greater -> L.build_icmp L.Icmp.Sgt
 	  | A.Geq     -> L.build_icmp L.Icmp.Sge
 	  ) e1' e2' "tmp" builder, A.Primitive, 0)
-      | A.Unop(op, e) ->
-          let e' = match (expr builder e) with
-            (c , A.Primitive,_) -> c 
-          | (p , _,_) -> L.const_inttoptr p (L.pointer_type i32_t)
-            (*TODO-ADAM: lvalue_array_idx does codegen here*)
-          in
+      | A.Unop(op, e_lv) ->
+          (*TODO-ADAM: Semantic checking should make sure e_lv is an lv*)
+          let (e',_,_) = expr builder e_lv in
 	  ((match op with
 	    A.Neg     -> L.build_neg
           | A.Not     -> L.build_not) e' "tmp" builder, A.Primitive, 0)
-      | A.Crement(opDir, op, lv) ->
+      | A.Crement(opDir, op, e_lv) ->
+          (*TODO-ADAM: Semantic checking should make sure e_lv is an lv*)
           (match opDir with
-            A.Pre  -> expr builder (A.Assign(lv, (match op with
+            A.Pre  -> expr builder (A.Assign(e_lv, (match op with
               A.PlusPlus   -> A.AssnAdd
             | A.MinusMinus -> A.AssnSub), (A.Primary (A.IntLit 1))))
           | A.Post ->
-              (* TODO-ADAM: THROWING AWAY VALUE*)
-              let (_, decl,_,_) = lvalue lv
-              and (value,_,_) = primary builder (A.Lvalue (lv)) in
-              ignore(expr builder (A.Crement(A.Pre, op, lv))); (value, decl, 0)
+              let (value,decl,_) = expr builder e_lv in
+              ignore(expr builder (A.Crement(A.Pre, op, e_lv))); (value, decl, 0)
           )
-      | A.Assign (lv, op, e) ->
-          let value = (A.Primary (A.Lvalue lv))
-          and addr  = (match lv with
-            A.Id(s)    -> lookup_addr s
-          (*| A.Arr(s,i) ->
-              let s' = lookup_addr s
-              and i' = [|L.const_int i32_t 0; L.const_int i32_t i|] in
-              L.build_in_bounds_gep s' i' "tmp" builder*)) in
+      | A.Assign (e_lv, op, e) ->
+          (*TODO-ADAM: Allow array assignment*)
+          (*TODO-ADAM: Semantic checking should make sure e_lv is an lv*)
+          let addr = (match e_lv with
+            A.Lvarr(A.Id(lvInner), eInner) ->
+              let lvI' = lookup_addr lvInner
+              (*TODO-ADAM: throwing away values*)
+              and (eI',_,_) = expr builder eInner in
+              let addrIn = L.build_in_bounds_gep lvI' [|L.const_int i32_t 0|] "arrPtr" builder in
+              L.build_in_bounds_gep addrIn [|eI'|] "arrIdx" builder
+          | A.Primary(A.Lvalue(A.Id(s))) ->
+              lookup_addr s
+          | _ ->
+              (*TODO-ADAM: Semantic checking should catch this trash*)
+              let trash = L.const_inttoptr (L.const_int i32_t 0) (L.pointer_type i32_t) in
+              L.build_in_bounds_gep trash [|L.const_int i32_t 0|] "trash" builder
+          )
+          in
           let eval = (match op with
             A.AssnReg     -> expr builder e
-          | A.AssnAdd     -> expr builder (A.Binop(value, A.Add,  e))
-          | A.AssnSub     -> expr builder (A.Binop(value, A.Sub,  e))
-          | A.AssnMult    -> expr builder (A.Binop(value, A.Mult, e))
-          | A.AssnDiv     -> expr builder (A.Binop(value, A.Div,  e))
-          | A.AssnMod     -> expr builder (A.Binop(value, A.Mod,  e))
+          | A.AssnAdd     -> expr builder (A.Binop(e_lv, A.Add,  e))
+          | A.AssnSub     -> expr builder (A.Binop(e_lv, A.Sub,  e))
+          | A.AssnMult    -> expr builder (A.Binop(e_lv, A.Mult, e))
+          | A.AssnDiv     -> expr builder (A.Binop(e_lv, A.Div,  e))
+          | A.AssnMod     -> expr builder (A.Binop(e_lv, A.Mod,  e))
           ) in
-          let eval' = match eval with (p, _,_) -> p in
-          (*ignore ((match lv with
-            A.Id(s)    -> store_primitive (lookup s) i32_t A.DeclAssnYes [A.Literal(eval)] builder
-          | A.Arr(s,i) -> store_array_idx (lookup s) i32_t i A.DeclAssnYes [A.Literal(eval)] builder 
-          )); eval*)
+          (*TODO-ADAM: throwing away values*)
+          let (eval',_,_) = eval in
           ignore (L.build_store eval' addr builder); eval
       | A.Call ("putchar", [e]) ->
-        (L.build_call putchar_func [|(match expr builder e with (p,_,_)->p)|] "putchar" builder, A.Primitive, 0)
+         (*TODO-ADAM: throwing away values*)
+         let (actual,_,_) = expr builder e in
+         (L.build_call putchar_func [|actual|] "putchar" builder, A.Primitive, 0)
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (fun a ->
            match expr builder a with (p,_,_)->p) (List.rev act)) in
-	 let result = (match fdecl.A.typ with A.Void -> ""
-                                            | _ -> f ^ "_result") in
+	 let result = (match fdecl.A.typ with
+           A.Void -> ""
+         | _ -> f ^ "_result") in
          (* TODO-ADAM: convert fdecl.A.typ to A.decl *)
          (L.build_call fdef (Array.of_list actuals) result builder, A.Primitive, 0)
     in
@@ -348,11 +333,12 @@ let translate (globals, externs, functions) =
     | A.Return e ->
         ignore (match fdecl.A.typ with
           A.Void -> L.build_ret_void builder
+        (*TODO-ADAM: return array*)
         (*TODO-ADAM: throwing away value*)
         | _      -> L.build_ret (match expr builder e with (p,_,_)->p) builder); (builder, break_bb, cont_bb)
     | A.If (predicate, then_stmt, else_stmt) ->
         (*TODO-ADAM: throwing away value*)
-        let bool_val = match expr builder predicate with (p,_,_)->p in
+        let (bool_val,_,_) = expr builder predicate in
         let if_merge_bb = L.append_block context "if.else.merge" the_function in
 
         let if_then_bb = L.append_block context "if.then" the_function in
@@ -403,8 +389,9 @@ let translate (globals, externs, functions) =
     visit_bb_add_terminals the_function*)
     (* Add a return if the last basic block is at the end *)
     add_terminal builder (match fdecl.A.typ with
-        A.Void -> L.build_ret_void
-      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0));
+      A.Void -> L.build_ret_void
+    (*TODO-ADAM: return array*)
+    | t -> L.build_ret (L.const_int (ltype_of_typ t) 0));
     ignore(L.builder_at_end context dummy_bb);
     ignore(L.block_terminator dummy_bb);
     ignore(L.delete_block dummy_bb);

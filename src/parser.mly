@@ -98,6 +98,7 @@ declaration:
   | typ_specifier LBRACKET INTLIT RBRACKET ID SEMI                           { ($1, $5, Array,    $3, DeclAssnNo,  []) }
   | typ_specifier LBRACKET INTLIT RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array,    $3, DeclAssnYes, $7) }
 
+/*TODO-ADAM: move decl_assign_arr to primary*/
 decl_assign_arr:
     LBRACE arr_assign RBRACE { List.rev $2 }
 
@@ -145,16 +146,16 @@ expression:
   | expression OR     expression { Binop($1, Or,      $3) }
   | MINUS expression %prec NEG   { Unop(Neg, $2) }
   | NOT expression               { Unop(Not, $2) }
-  | PLUSPLUS lvalue              { Crement(Pre,  PlusPlus,   $2) }
-  | MINUSMINUS lvalue            { Crement(Pre,  MinusMinus, $2) }
-  | lvalue PLUSPLUS              { Crement(Post, PlusPlus,   $1) }
-  | lvalue MINUSMINUS            { Crement(Post, MinusMinus, $1) }
-  | lvalue ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
-  | lvalue ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
-  | lvalue ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
-  | lvalue ASSIGNMULT expression { Assign($1, AssnMult, $3) }
-  | lvalue ASSIGNDIV expression  { Assign($1, AssnDiv,  $3) }
-  | lvalue ASSIGNMOD  expression  { Assign($1, AssnMod,  $3) }
+  | PLUSPLUS expression          { Crement(Pre,  PlusPlus,   $2) }
+  | MINUSMINUS expression        { Crement(Pre,  MinusMinus, $2) }
+  | expression PLUSPLUS          { Crement(Post, PlusPlus,   $1) }
+  | expression MINUSMINUS        { Crement(Post, MinusMinus, $1) }
+  | expression ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
+  | expression ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
+  | expression ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
+  | expression ASSIGNMULT expression { Assign($1, AssnMult, $3) }
+  | expression ASSIGNDIV expression  { Assign($1, AssnDiv,  $3) }
+  | expression ASSIGNMOD expression  { Assign($1, AssnMod,  $3) }
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
