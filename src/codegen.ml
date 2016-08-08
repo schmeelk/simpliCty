@@ -202,7 +202,7 @@ let translate (globals, externs, functions) =
     in
     (*Construct code for lvalues; return value pointed to*)
     
-    let lvalue builder = function
+    let lvalue = function
       A.Id(s)    ->
          let addr = lookup_addr s
          and decl = lookup_decl s in
@@ -212,12 +212,12 @@ let translate (globals, externs, functions) =
          | A.Array     ->
             (addr, decl, (lookup_size s),1)
          )
-    | A.Arr(s,i) ->
+    (*| A.Arr(s,i) ->
         let s' = lookup_addr s
         and decl = lookup_decl s
         and i' = [|L.const_int i32_t i|] in
         let addr = L.build_gep s' i' "arr" builder in
-        (addr, decl, 0,0)
+        (addr, decl, 0,0)*)
     in    
  
     let primary builder = function
@@ -226,7 +226,7 @@ let translate (globals, externs, functions) =
     | A.CharLit c  -> (L.const_int i32_t (int_of_char c)         , A.Primitive, 0)
     | A.BoolLit b  -> (L.const_int i1_t (if b then 1 else 0)     , A.Primitive, 0)
     | A.Lvalue lv  ->
-        let (value, decl, size,is_arr) = lvalue builder lv in
+        let (value, decl, size,is_arr) = lvalue lv in
         (match decl with
           A.Primitive -> (L.build_load value "lv" builder, decl, size)
         | A.Array     -> if is_arr = 1
@@ -236,16 +236,21 @@ let translate (globals, externs, functions) =
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
-        A.Primary p -> primary builder p
-      | A.Noexpr -> (L.const_int i32_t 0, A.Primitive, 0)
+        A.Primary p          -> primary builder p
+      | A.Lvarr (lv, e)      ->
+          let (lv',decl,_,_) = lvalue lv
+          and (e',_,_) = expr builder e
+          in
+          let addr = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in
+          let addr' = L.build_in_bounds_gep addr [|e'|] "arrIdx" builder in
+          (L.build_load addr' "idxIn" builder,decl,0)
+      | A.Noexpr             -> (L.const_int i32_t 0, A.Primitive, 0)
       | A.Binop (e1, op, e2) ->
           let e1' = match (expr builder e1) with
-            (c , A.Primitive,_) -> c
-          | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
+            (c , _,_) -> c
             (*TODO-ADAM: this is a dummy for array math*)
 	  and e2' = match (expr builder e2) with
-            (c , A.Primitive,_) -> c
-          | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
+            (c , _,_) -> c
             (*TODO-ADAM: this is a dummy for array math*)
           in
 	  ((match op with
@@ -279,17 +284,18 @@ let translate (globals, externs, functions) =
             | A.MinusMinus -> A.AssnSub), (A.Primary (A.IntLit 1))))
           | A.Post ->
               (* TODO-ADAM: THROWING AWAY VALUE*)
-              let (value, decl,_,_) = lvalue builder lv in
+              let (_, decl,_,_) = lvalue lv
+              and (value,_,_) = primary builder (A.Lvalue (lv)) in
               ignore(expr builder (A.Crement(A.Pre, op, lv))); (value, decl, 0)
           )
       | A.Assign (lv, op, e) ->
           let value = (A.Primary (A.Lvalue lv))
           and addr  = (match lv with
             A.Id(s)    -> lookup_addr s
-          | A.Arr(s,i) ->
+          (*| A.Arr(s,i) ->
               let s' = lookup_addr s
               and i' = [|L.const_int i32_t 0; L.const_int i32_t i|] in
-              L.build_in_bounds_gep s' i' "tmp" builder) in
+              L.build_in_bounds_gep s' i' "tmp" builder*)) in
           let eval = (match op with
             A.AssnReg     -> expr builder e
           | A.AssnAdd     -> expr builder (A.Binop(value, A.Add,  e))

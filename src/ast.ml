@@ -29,7 +29,7 @@ type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
 type lvalue = 
     Id of string
-  | Arr of string * int
+  (*| Arr of string * int *)
 
 type primary =
     IntLit of int
@@ -40,6 +40,7 @@ type primary =
 
 type expr =
     Primary of primary
+  | Lvarr of lvalue * expr
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Crement of crementDir * crement * lvalue
@@ -123,7 +124,7 @@ let string_of_assn = function
 
 let string_of_lvalue = function
     Id(s)    -> s
-  | Arr(s,_) -> s
+  (*| Arr(s,_) -> s*)
 
 let string_of_primary = function
     IntLit(i)     -> string_of_int i 
@@ -134,6 +135,7 @@ let string_of_primary = function
 
 let rec string_of_expr = function
     Primary(l)          -> string_of_primary l
+  | Lvarr(lv,_)         -> string_of_lvalue lv
   | Binop(e1, o, e2)    ->
       string_of_expr e1 ^" "^ string_of_op o ^" "^ string_of_expr e2
   | Unop(o, e)          -> string_of_uop o ^ string_of_expr e

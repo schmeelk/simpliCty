@@ -129,6 +129,7 @@ expression_opt:
 expression:
     primary                      { Primary($1) }
   | LPAREN expression RPAREN     { $2 }
+  | lvalue LBRACKET expression RBRACKET { Lvarr($1,$3) }
   | expression PLUS   expression { Binop($1, Add,     $3) }
   | expression MINUS  expression { Binop($1, Sub,     $3) }
   | expression TIMES  expression { Binop($1, Mult,    $3) }
@@ -165,8 +166,8 @@ primary:
   | lvalue   { Lvalue($1) }
 
 lvalue:
-    ID                           { Id($1) }
-  | ID LBRACKET INTLIT RBRACKET { Arr($1,$3) }
+    ID                              { Id($1) }
+  /*| ID LBRACKET expression RBRACKET { Arr($1,$3) }*/
 
 expression_list_opt:
     /* nothing */ { [] }
