@@ -126,7 +126,7 @@ let check (globals, externs, functions) =
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
         Primary p -> primary p
-      | Lvarr(lv,e) -> lvalue lv (*TODO-ADAM: semantic checking here*)
+      | Lvarr(lv,_) -> lvalue lv (*TODO-ADAM: semantic checking here*)
       | Binop(e1, op, e2) as e ->
           let t1 = expr e1
           and t2 = expr e2 in
