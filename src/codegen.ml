@@ -36,14 +36,16 @@ let translate (globals, externs, functions) =
       A.Int   -> i32_t
     | A.Float -> f32_t
     | A.Char  -> i32_t
+    | A.String -> i32_t
     | A.Bool  -> i1_t
     | A.Void  -> void_t
   in
   let primary_decompose = function 
-      A.IntLit(i)   -> i 
-    | A.BoolLit(b)  -> if b then 1 else 0
-    | A.FloatLit(f) -> int_of_float f 
-    | _             -> 0
+      A.IntLit(i)     -> i 
+    | A.BoolLit(b)    -> if b then 1 else 0
+    | A.FloatLit(f)   -> int_of_float f
+    | A.StringConv(s) -> String.length(s)
+    | _               -> 0
 
   and primary_float_decompose = function
       A.IntLit(i)   -> float_of_int i

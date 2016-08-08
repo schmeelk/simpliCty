@@ -13,7 +13,7 @@ Modified: 2016-07-25
 open Ast
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT OPENARR CLOSEARR
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT DOUBLEQT OPENARR CLOSEARR
 %token PLUS MINUS TIMES DIVIDE MODULO
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
@@ -24,6 +24,7 @@ open Ast
 %token <string> ID
 %token <float> FLOATLIT
 %token <char> CHARLIT
+%token <string> STRING
 %token EOF
 
 %nonassoc NOELSE
@@ -168,7 +169,9 @@ primary:
   | CHARLIT  { CharLit($1) }
   | TRUE     { BoolLit(true) }
   | FALSE    { BoolLit(false) }
+  | STRING   { StringConv($1) }
   | lvalue   { Lvalue($1) }
+
 
 lvalue:
     ID                              { Id($1) }

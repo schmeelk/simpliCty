@@ -118,6 +118,7 @@ let check (globals, externs, functions) =
       | BoolLit _  -> Bool
       | CharLit _  -> Char
       | Lvalue Id(s) -> type_of_identifier s
+      | StringConv _ -> String
     in
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
@@ -211,4 +212,5 @@ let check (globals, externs, functions) =
     stmt (Block func.body)
    
   in
+
   List.iter check_function functions
