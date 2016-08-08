@@ -1,0 +1,10 @@
+void print(char[] str)
+{
+	int i;
+	while (str[i] != 10)
+	{
+		putchar(str[i++]);
+	}
+	putchar(str[i]);
+	return;
+}
