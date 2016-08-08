@@ -137,6 +137,7 @@ let check (globals, externs, functions) =
             ))
           )
       | Unop(op, e_lv) as ex ->
+          (*TODO-ADAM: failure if thing is an array*)
           let t = expr e_lv in
 	  (match op with
 	    Neg when t = Int  -> Int
@@ -147,6 +148,7 @@ let check (globals, externs, functions) =
             ))
           )
       | Crement(opDir, op, e_lv) as ex ->
+          (*TODO-ADAM: failure if thing is an array*)
           let t = expr e_lv in
           (match op with
             _ when t = Int -> Int
@@ -157,6 +159,7 @@ let check (globals, externs, functions) =
           )
       | Noexpr -> Void
       | Assign(e_lv, op, e) as ex ->
+          (*TODO-ADAM: check that arrays are assigned to arrays/arrays of same size/no math*)
           let lt = expr e_lv
           and rt = expr e in
 	  (match op with
