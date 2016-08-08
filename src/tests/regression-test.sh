@@ -25,6 +25,13 @@ ulimit -t 30
 globallog=test.log
 rm -f $globallog
 error=0
+testcountall=0
+testcounttest=0
+testcounttestpass=0
+testcounttestfail=0
+testcountfail=0
+testcountfailpass=0
+testcountfailfail=0
 globalerror=0
 dirout=./test-output/
 keep=0
@@ -100,9 +107,10 @@ Check() {
     echo "###### Testing $basename" 1>&2
 
     generatedfiles=""
-
+    testcountall=$((testcountall+1))
+    testcounttest=$((testcounttest+1))
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.out" &&
-    Run "$SIMPLICTY" "<" $1 ">" "${dirout}${basename}.ll" &&
+    Run "$SIMPLICTY" $1 ">" "${dirout}${basename}.ll" &&
     Run "$LLI" "${dirout}${basename}.ll" ">" "${dirout}${basename}.out" &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -115,8 +123,10 @@ Check() {
 	fi
 	echo "OK"
 	echo "###### SUCCESS" 1>&2
+        testcounttestpass=$((testcounttestpass+1))
     else
 	echo "###### FAILED" 1>&2
+        testcounttestfail=$((testcounttestfail+1))
 	globalerror=$error
     fi
 }
@@ -133,10 +143,12 @@ CheckFail() {
     echo 1>&2
     echo "###### Testing $basename" 1>&2
 
+    testcountall=$((testcountall+1))
+    testcountfail=$((testcountfail+1))
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.err ${basename}.diff" &&
-    RunFail "$SIMPLICTY" "<" $1 "2>" "${dirout}${basename}.err" ">>" $globallog &&
+    RunFail "$SIMPLICTY" $1 "2>" "${dirout}${basename}.err" ">>" $globallog &&
     Compare ${basename}.err ${reffile}.err ${basename}.diff
 
     # Report the status and clean up the generated files
@@ -147,8 +159,10 @@ CheckFail() {
 	fi
 	echo "OK"
 	echo "###### SUCCESS" 1>&2
+        testcountfailpass=$((testcountfailpass+1))
     else
 	echo "###### FAILED" 1>&2
+        testcountfailfail=$((testcountfailfail+1))
 	globalerror=$error
     fi
 }
@@ -232,11 +246,21 @@ TestOp(){
     echo "Testing Operators"
     files="test/operators/test-*.sct fail/operators/fail-*.sct"
     Test
+    files="test/operators/binary/test-*.sct fail/operators/binary/fail-*.sct"
+    Test
+    files="test/operators/unary/test-*.sct fail/operators/unary/fail-*.sct"
+    Test
 }
 
 TestAssign(){
     echo "Testing Assignments"
     files="test/assignment/test-*.sct fail/assignment/fail-*.sct"
+    Test
+    files="test/assignment/lvalue/test-*.sct fail/assignment/lvalue/fail-*.sct"
+    Test
+    files="test/assignment/literal/test-*.sct fail/assignment/literal/fail-*.sct"
+    Test
+    files="test/assignment/char/test-*.sct fail/assignment/char/fail-*.sct"
     Test
 }
 
@@ -301,6 +325,9 @@ while getopts $options optchar; do
     esac
 done
 TestAll
+echo "Number of all tests executed " $testcountall"!"
+echo "Number of test tests executed " $testcounttest " of which " $testcounttestpass " passed and " $testcounttestfail " failed"
+echo "Number of fail tests executed " $testcountfail " of which " $testcountfailpass " passed and " $testcountfailfail " failed"
 shift `expr $OPTIND - 1`
 
 exit $globalerror

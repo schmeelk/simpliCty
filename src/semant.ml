@@ -106,7 +106,6 @@ let check (globals, externs, functions) =
     let symbols = List.fold_left (fun m (t, n, _, _, _, _) -> StringMap.add n t m)
         symbols func.locals
     in
-
     let type_of_identifier s =
       try StringMap.find s symbols
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
@@ -131,8 +130,20 @@ let check (globals, externs, functions) =
           and t2 = expr e2 in
 	  (match op with
             Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
+          | Add | Sub | Mult | Div | Mod when t1 = Float && t2 = Float -> Float 
+          | Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Float -> Float 
+          | Add | Sub | Mult | Div | Mod when t1 = Float && t2 = Int -> Float 
+          | Add | Sub | Mult | Div | Mod when t1 = Bool && (t2 = Int || t2 == Float) -> raise (Failure (
+              "illegal cast with operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
+              string_of_typ t2 ^" in "^ string_of_expr e
+            ))
+          | Add | Sub | Mult | Div | Mod when (t1 = Int || t1 = Float) && t2 = Bool -> raise (Failure (
+              "illegal cast with operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
+              string_of_typ t2 ^" in "^ string_of_expr e
+            ))
 	  | Equal | Neq when t1 = t2                               -> Bool
 	  | Less | Leq | Greater | Geq when t1 = Int && t2 = Int   -> Bool
+	  | Less | Leq | Greater | Geq when t1 = Float && t2 = Float   -> Bool
 	  | And | Or when t1 = Bool && t2 = Bool                   -> Bool
           | _                                                      -> raise (Failure (
               "illegal binary operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
