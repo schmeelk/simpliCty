@@ -121,6 +121,7 @@ let check (globals, externs, functions) =
       | FloatLit _  -> Float 
       | BoolLit _  -> Bool
       | CharLit _  -> Char
+      | StringConv _ -> String
       | Lvalue  lv -> lvalue lv
     in
     (* Return the type of an expression or throw an exception *)
@@ -210,4 +211,5 @@ let check (globals, externs, functions) =
     stmt (Block func.body)
    
   in
+
   List.iter check_function functions

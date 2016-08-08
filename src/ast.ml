@@ -23,7 +23,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Float | Bool | Void | Char
+type typ = Int | Float | Bool | Void | Char | String
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -36,6 +36,7 @@ type primary =
   | FloatLit of float 
   | CharLit of char
   | BoolLit of bool
+  | StringConv of string
   | Lvalue of lvalue
 
 type expr =
@@ -125,10 +126,23 @@ let string_of_lvalue = function
     Id(s)    -> s
   | Arr(s,_) -> s
 
+let explode s = let rec f t = function
+    | -1 -> t
+    | h -> f (s.[h] :: t) (h - 1)
+  in f [] (String.length s - 1)
+
+let implode l = 
+ let s = Bytes.create (List.length l) in
+  let rec f n = function
+    | x :: xs -> s.[n] <- x; f (n + 1) xs
+    | [] -> s
+  in f 0 l
+
 let string_of_primary = function
     IntLit(i)     -> string_of_int i 
   | FloatLit(f)   -> string_of_float f 
   | CharLit(c)    -> string_of_int (int_of_char c)
+  | StringConv(s) -> implode(explode s)
   | BoolLit(l)    -> if l = true then "true" else "false"
   | Lvalue(l)     -> string_of_lvalue l
 
@@ -165,6 +179,7 @@ let string_of_typ = function
     Int   -> "int"
   | Float -> "float"
   | Char  -> "char"
+  | String -> "string"
   | Bool  -> "bool"
   | Void  -> "void"
 
