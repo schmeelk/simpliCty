@@ -65,8 +65,9 @@ rule token = parse
 | '\''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']*'\'' as lxm { INTLIT(int_of_char lxm.[1]) }
 | ['+' '-']?['0'-'9']*'.'['0'-'9']+ as lxm { FLOATLIT(float_of_string lxm) }
 | ['+' '-']?['0'-'9']+'.'['0'-'9']* as lxm { FLOATLIT(float_of_string lxm) }
-| ['+' '-']?['0'-'9']['.']?['0'-'9']*'e'['-' '+']?['0'-'9']* as lxm { FLOATLIT(float_of_string lxm) }
-| ['+' '-']?['0'-'9']*'e'['-' '+']?['0'-'9']+ as lxm { FLOATLIT(float_of_string lxm) }
+| ['+' '-']?['0'-'9']*['.']['0'-'9']+'e'['-' '+']['0'-'9']? as lxm { FLOATLIT(float_of_string lxm) }
+| ['+' '-']?['0'-'9']+['.']['0'-'9']*'e'['-' '+']['0'-'9']? as lxm { FLOATLIT(float_of_string lxm) }
+| ['+' '-']?['0'-'9']?'e'['-' '+']?['0'-'9']+ as lxm { FLOATLIT(float_of_string lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
