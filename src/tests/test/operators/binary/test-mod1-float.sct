@@ -4,6 +4,7 @@ int mod (float x, float y)
 }
 int main()
 {
-	float f = mod(3.0,2.2);
+	float f;
+        f = mod(3.0, 2.2);
 	return 0;
 }
