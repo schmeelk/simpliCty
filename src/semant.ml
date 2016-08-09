@@ -121,12 +121,13 @@ let check (globals, externs, functions) =
       | FloatLit _  -> Float 
       | BoolLit _  -> Bool
       | CharLit _  -> Char
-      | StringConv _ -> String
       | Lvalue  lv -> lvalue lv
     in
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
         Primary p -> primary p
+      | StringConv _ -> String
+      | ListCreate _ -> Int
       | Binop(e1, op, e2) as e ->
           let t1 = expr e1
           and t2 = expr e2 in

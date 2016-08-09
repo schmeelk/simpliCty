@@ -36,7 +36,6 @@ type primary =
   | FloatLit of float 
   | CharLit of char
   | BoolLit of bool
-  | StringConv of string
   | Lvalue of lvalue
 
 type expr =
@@ -46,6 +45,8 @@ type expr =
   | Crement of crementDir * crement * lvalue
   | Assign of lvalue * assn * expr
   | Call of string * expr list
+  | StringConv of char
+  | ListCreate of expr list
   | Noexpr
 
 type parameter = typ * string * decl * int
@@ -126,28 +127,17 @@ let string_of_lvalue = function
     Id(s)    -> s
   | Arr(s,_) -> s
 
-let explode s = let rec f t = function
-    | -1 -> t
-    | h -> f (s.[h] :: t) (h - 1)
-  in f [] (String.length s - 1)
-
-let implode l = 
- let s = Bytes.create (List.length l) in
-  let rec f n = function
-    | x :: xs -> s.[n] <- x; f (n + 1) xs
-    | [] -> s
-  in f 0 l
-
 let string_of_primary = function
     IntLit(i)     -> string_of_int i 
   | FloatLit(f)   -> string_of_float f 
   | CharLit(c)    -> string_of_int (int_of_char c)
-  | StringConv(s) -> implode(explode s)
   | BoolLit(l)    -> if l = true then "true" else "false"
   | Lvalue(l)     -> string_of_lvalue l
 
 let rec string_of_expr = function
     Primary(l)          -> string_of_primary l
+  | StringConv(c) 	-> "'" ^ Char.escaped c ^ "'"
+  | ListCreate(s) 	-> "{" ^ String.concat ", " (List.map string_of_expr s) ^ "}"
   | Binop(e1, o, e2)    ->
       string_of_expr e1 ^" "^ string_of_op o ^" "^ string_of_expr e2
   | Unop(o, e)          -> string_of_uop o ^ string_of_expr e
