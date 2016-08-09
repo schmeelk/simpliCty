@@ -139,8 +139,6 @@ expression_opt:
 expression:
     primary                      { Primary($1) }
   | STRING			 { ListCreate(List.map (fun x -> StringConv(x)) (explode $1)) }
-  | LPAREN DOUBLEQT STRING DOUBLEQT RPAREN { ListCreate(List.map (fun x -> StringConv(x)) (explode $3)) }
-  | DOUBLEQT STRING DOUBLEQT	 { ListCreate(List.map (fun x -> StringConv(x)) (explode $2)) }
   | LPAREN expression RPAREN     { $2 }
   | OPENARR expression_list CLOSEARR {ArrLit($2)}
   | lvalue arr_pos { Lvarr($1,List.rev $2) }

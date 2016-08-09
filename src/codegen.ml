@@ -221,6 +221,8 @@ let translate (globals, externs, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.Primary p          -> primary builder p
+      | A.StringConv p -> primary builder (A.CharLit p)
+      | A.ListCreate p -> (L.const_int i32_t (List.length(p)), A.Primitive, (List.length(p)))
       | A.ArrLit lp ->
           let list_primary = List.fold_left (fun li p ->
             let (p',_,_) = expr builder p in
