@@ -232,7 +232,7 @@ let translate (globals, externs, functions) =
         A.Primary p -> primary builder p
       | A.Noexpr -> (L.const_int i32_t 0, A.Primitive, 0)
       | A.StringConv p -> primary builder (A.CharLit p)
-      | A.ListCreate p -> (L.const_int i32_t (List.length(p)), A.Primitive, 0)  
+      | A.ListCreate p -> (L.const_int i32_t (List.length(p)), A.Primitive, (List.length(p)))  
       | A.Binop (e1, op, e2) ->
           let e1' = match (expr builder e1) with
             (c , A.Primitive,_) -> c

@@ -134,8 +134,6 @@ expression_opt:
 expression:
     primary                      { Primary($1) }
   | STRING			 { ListCreate(List.map (fun x -> StringConv(x)) (explode $1)) }
-  | LPAREN DOUBLEQT STRING DOUBLEQT RPAREN { ListCreate(List.map (fun x -> StringConv(x)) (explode $3)) }
-  | DOUBLEQT STRING DOUBLEQT	 { ListCreate(List.map (fun x -> StringConv(x)) (explode $2)) }
   | LPAREN expression RPAREN     { $2 }
   | expression PLUS   expression { Binop($1, Add,     $3) }
   | expression MINUS  expression { Binop($1, Sub,     $3) }
