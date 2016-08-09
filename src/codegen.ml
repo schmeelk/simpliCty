@@ -44,7 +44,6 @@ let translate (globals, externs, functions) =
       A.IntLit(i)     -> i 
     | A.BoolLit(b)    -> if b then 1 else 0
     | A.FloatLit(f)   -> int_of_float f
-    | A.StringConv(s) -> String.length(s)
     | _               -> 0
 
   and primary_float_decompose = function

@@ -125,6 +125,8 @@ let check (globals, externs, functions) =
         Primary p -> primary p
       | ArrLit _ -> Int (*TODO-ADAM: TrASH*)
       | Lvarr(Id(s),_) -> type_of_identifier s (*TODO-ADAM: semantic checking*)
+      | StringConv _ -> String
+      | ListCreate _ -> Int
       | Binop(e1, op, e2) as e ->
           let t1 = expr e1
           and t2 = expr e2 in

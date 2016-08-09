@@ -11,6 +11,11 @@ Modified: 2016-07-25
 
 %{
 open Ast
+
+let explode s = let rec f t = function
+    | -1 -> t
+    | h -> f (s.[h] :: t) (h - 1)
+  in f [] (String.length s - 1)
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT DOUBLEQT OPENARR CLOSEARR
@@ -133,6 +138,9 @@ expression_opt:
 
 expression:
     primary                      { Primary($1) }
+  | STRING			 { ListCreate(List.map (fun x -> StringConv(x)) (explode $1)) }
+  | LPAREN DOUBLEQT STRING DOUBLEQT RPAREN { ListCreate(List.map (fun x -> StringConv(x)) (explode $3)) }
+  | DOUBLEQT STRING DOUBLEQT	 { ListCreate(List.map (fun x -> StringConv(x)) (explode $2)) }
   | LPAREN expression RPAREN     { $2 }
   | OPENARR expression_list CLOSEARR {ArrLit($2)}
   | lvalue arr_pos { Lvarr($1,List.rev $2) }
@@ -169,9 +177,7 @@ primary:
   | CHARLIT  { CharLit($1) }
   | TRUE     { BoolLit(true) }
   | FALSE    { BoolLit(false) }
-  | STRING   { StringConv($1) }
   | lvalue   { Lvalue($1) }
-
 
 lvalue:
     ID                              { Id($1) }
