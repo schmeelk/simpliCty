@@ -1,0 +1,63 @@
+void prints(char[] val)
+{
+	int i;
+	while(putchar(val[i]) != 10) i++;
+	return;
+}
+
+void printi(int val)
+{
+	char[12] str;
+	int i = 11;
+	int neg;
+	bool first = true;
+	if(val < 0) neg = 1;
+	str[11] = 10;
+	while(val != 0 || first)
+	{
+		str[--i] = '0' + (val % 10);
+		val /= 10;
+		if(first) first = false;
+	}
+	if(neg == 1)
+	{
+		str[--i] = '-';
+	}	
+	while(putchar(str[i]) != 10) i++;
+	return;
+}
+
+void printc(char val)
+{
+	putchar(val);
+	putchar(10);
+	return;
+}
+
+void printb(bool val)
+{
+	if(val)
+	{
+		putchar('t');
+		putchar('r');
+		putchar('u');
+		putchar('e');
+	}
+	else
+	{
+		putchar('f');
+		putchar('a');
+		putchar('l');
+		putchar('s');
+		putchar('e');
+	}
+	putchar(10);
+	return;
+}
+ 
+void printf(float val)
+{
+   simplicty_print(f);    
+   return;
+}
+
