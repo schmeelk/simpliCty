@@ -1,0 +1,1 @@
+Fatal error: exception Failure("illegal cast with operator float + bool in 123.45 + true")
