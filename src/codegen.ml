@@ -249,7 +249,8 @@ let translate (globals, externs, functions) =
           in
           (*let addr = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in
           let addr' = L.build_in_bounds_gep addr [|e'|] "arrIdx" builder in*)
-          let addr' = L.build_gep lv' [|e''|] "arrIdx" builder in
+          (*let ad = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in*)
+          let addr' = L.build_in_bounds_gep lv' [|L.const_int i32_t 0; e''|] "arrIdx" builder in
           ([L.build_load addr' "idxIn" builder],decl,[0])
       | A.Noexpr             -> ([L.const_int i32_t 0], A.Primitive, [0])
       | A.Binop (e1, op, e2) ->
@@ -309,8 +310,8 @@ let translate (globals, externs, functions) =
                 else if List.length lvsize = 1 then List.hd pos_list
                 else L.const_int i32_t 0
               )in
-              let addrIn = L.build_in_bounds_gep lvI' [|L.const_int i32_t 0|] "arrPtr" builder in
-              (L.build_in_bounds_gep addrIn [|eI''|] "arrIdx" builder, A.Primitive, [0])
+              (*let addrIn = L.build_in_bounds_gep lvI' [|L.const_int i32_t 0|] "arrPtr" builder in
+              *)(L.build_in_bounds_gep lvI' [|L.const_int i32_t 0; eI''|] "arrIdx" builder, A.Primitive, [0])
           | A.Primary(A.Lvalue(A.Id(s))) ->
               (lookup_addr s, lookup_decl s, lookup_size s)
           | _ ->
