@@ -38,7 +38,7 @@ type primary =
 
 type expr =
     Primary of primary
-	| ArrLit of expr list
+  | ArrLit of expr list
   | Lvarr of lvalue * expr
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -47,9 +47,9 @@ type expr =
   | Call of string * expr list
   | Noexpr
 
-type parameter = typ * string * decl * int
+type parameter = typ * string * decl * (int list)
 
-type declaration = typ * string * decl * int * (primary list)
+type declaration = typ * string * decl * (int list) * (primary list)
 
 type function_declaration = typ * string * decl * expr
 
@@ -176,23 +176,22 @@ let string_of_typ = function
   | Bool  -> "bool"
   | Void  -> "void"
 
-let string_of_vdecl (t, id, dcl, size, prim_list) =
+let string_of_vdecl (t, id, decl, size_list, prim_list) =
    let size' =
-     if dcl = Primitive then ""
-     else "["^ string_of_int size ^"]"
+     if decl = Primitive then ""
+     else "["^ string_of_int (List.hd size_list) ^"]"
    and assn =
      if List.length prim_list = 0 then ""
      else
        let value = 
-         if dcl = Primitive then string_of_primary (List.hd prim_list)
+         if decl = Primitive then string_of_primary (List.hd prim_list)
          else "{|"^ String.concat ", " (List.map string_of_primary prim_list) ^ "|}"
        in
        " = " ^ value
    in
    string_of_typ t ^ size' ^" "^ id ^ assn ^";\n"
 
-let snd_of_four (_,id,_,_) = id
-let snd_of_six (_, id, _, _, _, _) = id 
+let snd_of_four (_,id,_,_) = id 
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^

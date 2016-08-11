@@ -77,9 +77,9 @@ parameter_list:
   | parameter_list COMMA  parameter { $3 :: $1 }
   
 parameter:
-    typ_specifier ID                          { ($1,$2, Primitive,  0) }
-  | typ_specifier LBRACKET RBRACKET ID        { ($1,$4, Array,      0) }
-  | typ_specifier arr_size_decl ID { ($1,$3, Array,     $2) }
+    typ_specifier ID                   { ($1,$2, Primitive, [0]) }
+  | typ_specifier LBRACKET RBRACKET ID { ($1,$4, Array,     [0]) }
+  | typ_specifier size_decl ID         { ($1,$3, Array,     List.rev $2) }
 
 typ_specifier:
     INT   { Int }
@@ -93,10 +93,10 @@ declaration_list:
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-    typ_specifier ID SEMI                                         { ($1, $2, Primitive, 0,  []) }
-  | typ_specifier ID ASSIGNREG primary SEMI                       { ($1, $2, Primitive, 0, [$4]) }
-  | typ_specifier arr_size_decl ID SEMI                           { ($1, $3, Array,    $2,  []) }
-  | typ_specifier arr_size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    $2, $5) }
+    typ_specifier ID SEMI                                     { ($1, $2, Primitive, [0],  []) }
+  | typ_specifier ID ASSIGNREG primary SEMI                   { ($1, $2, Primitive, [0], [$4]) }
+  | typ_specifier size_decl ID SEMI                           { ($1, $3, Array,    List.rev $2,  []) }
+  | typ_specifier size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    List.rev $2, $5) }
 
 decl_assign_arr:
     OPENARR arr_assign CLOSEARR {List.rev $2}
@@ -105,8 +105,9 @@ arr_assign:
     primary {[$1]}
   | arr_assign COMMA primary {$3::$1}
 
-arr_size_decl:
-    LBRACKET INTLIT RBRACKET {$2}
+size_decl:
+    LBRACKET INTLIT RBRACKET           { [$2] }
+  | size_decl LBRACKET INTLIT RBRACKET { $3::$1 }
 
 statement_list:
     /* nothing */  { [] }
