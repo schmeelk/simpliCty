@@ -55,7 +55,7 @@ type struct_member = typ * string * decl * int
 
 type function_declaration = typ * string * decl * expr
 
-type struct_declaration = string * (struct_member list)
+type struct_declaration = string * (declaration list)
 
 type stmt =
     Block of stmt list
