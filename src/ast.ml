@@ -39,7 +39,7 @@ type primary =
 type expr =
     Primary of primary
   | ArrLit of expr list
-  | Lvarr of lvalue * expr
+  | Lvarr of lvalue * (expr list)
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Crement of crementDir * crement * expr
@@ -136,8 +136,8 @@ let rec string_of_expr = function
       string_of_primary l
   | ArrLit(lp) ->
 	"{|"^ String.concat ", " (List.map string_of_expr lp) ^ "|}"
-  | Lvarr(lv, e)        ->
-      string_of_lvalue lv ^"["^ string_of_expr e ^"]"
+  | Lvarr(lv, le)        ->
+      string_of_lvalue lv ^"["^ String.concat "][" (List.map string_of_expr le) ^"]"
   | Binop(e1, o, e2)    ->
       string_of_expr e1 ^" "^ string_of_op o ^" "^ string_of_expr e2
   | Unop(o, e)          ->
