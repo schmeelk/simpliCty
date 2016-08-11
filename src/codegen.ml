@@ -156,7 +156,7 @@ let translate (globals, externs, functions) =
             let addr = L.build_alloca typ' name builder in
 	    ignore(L.build_store p addr builder); StringMap.add name (addr,decl,size_list) m
         | A.Array ->
-            let full_size = List.fold_left (fun i s -> i+s) 0 size_list in
+            let full_size = List.fold_left (fun i s -> i*s) 1 size_list in
             if full_size <> 0 then
               let size' = L.const_int i32_t full_size in
               let addr = L.build_array_alloca typ' size' name builder in
@@ -170,7 +170,7 @@ let translate (globals, externs, functions) =
         let addr = (match decl with
           A.Primitive -> L.build_alloca typ'
         | A.Array     ->
-            let full_size = List.fold_left (fun i s -> i+s) 0 size_list in
+            let full_size = List.fold_left (fun i s -> i*s) 1 size_list in
             let size' = L.const_int i32_t full_size in
             L.build_array_alloca typ' size') name builder in
         (match decl with
@@ -229,10 +229,20 @@ let translate (globals, externs, functions) =
       | A.Lvarr (A.Id(lv), e_list)->
           let lv' = lookup_addr lv
           and decl = lookup_decl lv
+          and size = lookup_size lv
           (*TODO-ADAM: throwing away values*)
-          and (e',_,_) = expr builder (List.hd e_list)
+          and pos_list = List.map (fun e ->
+            let (e',_,_) = expr builder e in
+            List.hd e'
+          ) e_list
           in
-          let e'' = List.hd e' in
+          let e'' = (
+            if List.length size = 2 then
+              let mul = L.build_mul (List.hd pos_list) (L.const_int i32_t (List.nth size 1)) "mult" builder in
+              L.build_add mul (List.nth pos_list 1) "add" builder
+            else if List.length size = 1 then List.hd pos_list
+            else L.const_int i32_t 0)
+          in
           (*let addr = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in
           let addr' = L.build_in_bounds_gep addr [|e'|] "arrIdx" builder in*)
           let addr' = L.build_gep lv' [|e''|] "arrIdx" builder in
@@ -281,9 +291,20 @@ let translate (globals, externs, functions) =
           let (addr,decl,size) = (match e_lv with
             A.Lvarr(A.Id(lvInner), eInner_list) ->
               let lvI' = lookup_addr lvInner
+              and lvdecl = lookup_decl lvInner
+              and lvsize = lookup_size lvInner
               (*TODO-ADAM: throwing away values*)
-              and (eI',_,_) = expr builder (List.hd eInner_list) in
-		let eI'' = List.hd eI' in
+              and pos_list = List.map (fun e->
+                let (e',_,_) = expr builder e in
+                List.hd e'
+              ) eInner_list in
+              let eI'' = (
+                if List.length lvsize = 2 then
+                  let mul = L.build_mul (List.hd pos_list) (L.const_int i32_t (List.nth lvsize 1)) "mult" builder in
+                  L.build_add mul (List.nth pos_list 1) "add" builder
+                else if List.length lvsize = 1 then List.hd pos_list
+                else L.const_int i32_t 0
+              )in
               let addrIn = L.build_in_bounds_gep lvI' [|L.const_int i32_t 0|] "arrPtr" builder in
               (L.build_in_bounds_gep addrIn [|eI''|] "arrIdx" builder, A.Primitive, [0])
           | A.Primary(A.Lvalue(A.Id(s))) ->
