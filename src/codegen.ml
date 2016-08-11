@@ -54,23 +54,21 @@ let translate (globals, externs, functions) =
   in
  
   (* Store memory *) 
-  let store_primitive addr typ' assign value builder =
-    L.build_store (L.const_int typ' (match assign with
-      A.DeclAssnYes -> primary_decompose (List.hd value)
-    | _             -> 0)
+  let store_primitive addr typ' value builder =
+    L.build_store (L.const_int typ' (if List.length value <> 0 then primary_decompose (List.hd value)
+    else 0)
     ) addr builder
-  and store_array_idx addr index typ' assign value builder =
+  and store_array_idx addr index typ' value builder =
     let i  = [|L.const_int i32_t index|]
-    and v' = L.const_int typ' (match assign with
-      A.DeclAssnYes -> primary_decompose value
-    | _             -> 0)
+    and v' = L.const_int typ' (if List.length value <> 0 then primary_decompose (List.hd value)
+    else 0)
     in
     let addr' = L.build_in_bounds_gep addr i "storeArrIdx" builder in
     L.build_store v' addr' builder
-  and store_float_primitive addr typ' assign value builder =
-    L.build_store (L.const_float typ' (match assign with
-      A.DeclAssnYes -> primary_float_decompose (List.hd value)
-    | _             -> 0.0)
+  and store_float_primitive addr typ' value builder =
+    L.build_store (L.const_float typ' (if List.length value <> 0
+      then primary_float_decompose (List.hd value)
+     else 0.0)
     ) addr builder
   and copy_array size old_addr new_addr builder =
     let rec copy_idx idx =(match idx with
@@ -88,12 +86,12 @@ let translate (globals, externs, functions) =
   (* Declare each global variable; remember its value in a map *)
   (*TODO-ADAM: global scoped arrays*)
   let global_vars =
-    let global_var m (typ, name, decl, size, assign, values) =
+    let global_var m (typ, name, decl, size, values) =
       let typ' = ltype_of_typ typ in
       let init_val v =
         (match typ with
-           A.Float -> L.const_float typ' (match assign with A.DeclAssnYes -> primary_float_decompose v | _ -> 0.0)
-        | _        -> L.const_int   typ' (match assign with A.DeclAssnYes -> primary_decompose v       | _ -> 0)
+           A.Float -> L.const_float typ' (if List.length values <> 0 then primary_float_decompose v else 0.0)
+        | _        -> L.const_int   typ' (if List.length values <> 0 then primary_decompose v       else 0)
         )
       in
       let init = (match decl with
@@ -166,7 +164,7 @@ let translate (globals, externs, functions) =
               StringMap.add name (p,decl,size) m
         )
       in
-      let add_local m (typ, name, decl, size, assign, values) =
+      let add_local m (typ, name, decl, size, values) =
         let typ' = ltype_of_typ typ
         and size' = L.const_int i32_t size in
         let addr = (match decl with
@@ -174,11 +172,11 @@ let translate (globals, externs, functions) =
         | A.Array     -> L.build_array_alloca typ' size') name builder in
         (match decl with
           A.Primitive -> (match typ with 
-             A.Float -> ignore(store_float_primitive addr typ' assign values builder)
-            | _ ->  ignore(store_primitive addr typ' assign values builder))
+             A.Float -> ignore(store_float_primitive addr typ' values builder)
+            | _ ->  ignore(store_primitive addr typ' values builder))
         | A.Array     ->
             ignore(List.fold_left (fun index _vals ->
-            ignore(store_array_idx addr index typ' assign _vals builder);index+1) 0 values)
+            ignore(store_array_idx addr index typ' [_vals] builder);index+1) 0 values)
         ); StringMap.add name (addr,decl,size) m
       in
       let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals

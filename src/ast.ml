@@ -12,8 +12,6 @@ Modified: 2016-07-25
 
 type decl = Primitive | Array (* | Struct *)
 
-type decl_assn = DeclAssnYes | DeclAssnNo
-
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
 
@@ -51,7 +49,7 @@ type expr =
 
 type parameter = typ * string * decl * int
 
-type declaration = typ * string * decl * int * decl_assn * (primary list)
+type declaration = typ * string * decl * int * (primary list)
 
 type function_declaration = typ * string * decl * expr
 
@@ -178,12 +176,12 @@ let string_of_typ = function
   | Bool  -> "bool"
   | Void  -> "void"
 
-let string_of_vdecl (t, id, dcl, size, is_assn, prim_list) =
+let string_of_vdecl (t, id, dcl, size, prim_list) =
    let size' =
      if dcl = Primitive then ""
      else "["^ string_of_int size ^"]"
    and assn =
-     if is_assn = DeclAssnNo then ""
+     if List.length prim_list = 0 then ""
      else
        let value = 
          if dcl = Primitive then string_of_primary (List.hd prim_list)

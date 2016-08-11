@@ -93,10 +93,10 @@ declaration_list:
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-    typ_specifier ID SEMI                                                    { ($1, $2, Primitive, 0, DeclAssnNo,  []) }
-  | typ_specifier ID ASSIGNREG primary SEMI                                  { ($1, $2, Primitive, 0, DeclAssnYes, [$4]) }
-  | typ_specifier arr_size_decl ID SEMI                           { ($1, $3, Array,    $2, DeclAssnNo,  []) }
-  | typ_specifier arr_size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    $2, DeclAssnYes, $5) }
+    typ_specifier ID SEMI                                         { ($1, $2, Primitive, 0,  []) }
+  | typ_specifier ID ASSIGNREG primary SEMI                       { ($1, $2, Primitive, 0, [$4]) }
+  | typ_specifier arr_size_decl ID SEMI                           { ($1, $3, Array,    $2,  []) }
+  | typ_specifier arr_size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    $2, $5) }
 
 decl_assign_arr:
     OPENARR arr_assign CLOSEARR {List.rev $2}
