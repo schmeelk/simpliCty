@@ -1,10 +1,50 @@
-void print(char[] str)
+void prints(char[] val)
 {
-	int i;
-	while (str[i] != 10)
-	{
-		putchar(str[i++]);
-	}
-	putchar(str[i]);
+	int ptr;
+	while(str[i] != 0) putchar(str[i++]);
+	/*while(putchar(str[i]) != 0) i++;*/
+	putchar(10);
 	return;
+}
+void printi(int val)
+{
+        char[10] stack;
+        int ptr;
+        if(val < 0)
+        {
+                putchar(45);
+                val *= -1;
+        }
+        while(val != 0 || ptr == 0)
+        {
+                stack[ptr++] = '0' + (val % 10);
+                val /= 10;
+        }
+        while(--ptr >= 0) putchar(stack[ptr]);
+        putchar(10);
+        return;
+}
+void printc(char val)
+{
+        putchar(val);
+        putchar(10);
+        return;
+}
+void printb(bool val)
+{
+        if(val)
+        {
+                putchar('t');
+                putchar('r');
+                putchar('u');
+        }
+        else
+        {
+                putchar('f');
+                putchar('a');
+                putchar('l');
+                putchar('s');
+        }
+        putchar('e');putchar(10);
+        return;
 }
