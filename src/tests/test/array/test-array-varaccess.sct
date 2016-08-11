@@ -10,7 +10,7 @@ void print(char[] str)
 
 int main()
 {
-	char[13] str = {'H','e','l','l','o',' ','w','o','r','l','d','!',10};
+	char[13] str = {|'H','e','l','l','o',' ','w','o','r','l','d','!',10|};
 	print(str);
 	return 0;
 }

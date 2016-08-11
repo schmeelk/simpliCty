@@ -1,6 +1,6 @@
-int main()
+void print(int str [])
 {
-	char[19] str = {|'H','e','l','l','o',' ','w','o','r','l','d','!',10|};
+	putchar(str[0]);
 	putchar(str[1]);
 	putchar(str[2]);
 	putchar(str[3]);
@@ -12,6 +12,11 @@ int main()
 	putchar(str[9]);
 	putchar(str[10]);
 	putchar(str[11]);
-	putchar(str[12]);
+	return;
+}
+int main()
+{
+	int str [12] = {72,69,76,76,79,32,87,79,82,76,68,10};
+	print(str);
 	return 0;
 }

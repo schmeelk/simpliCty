@@ -27,6 +27,7 @@ rm -f $globallog
 error=0
 globalerror=0
 dirout=./test-output/
+mkdir test-output 2> /dev/null
 keep=0
 
 Usage() {
