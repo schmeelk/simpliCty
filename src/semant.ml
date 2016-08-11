@@ -72,7 +72,7 @@ let check (globals, externs, functions) =
        locals = []; body = [] } built_in_decls
   in 
   let built_in_decls =  StringMap.add "getchar"
-     { typ = Void; fname = "getchar"; formals = [(Int, "x", Primitive, [])];
+     { typ = Int; fname = "getchar"; formals = [];
        locals = []; body = [] } built_in_decls
   in 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)

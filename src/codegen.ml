@@ -351,11 +351,11 @@ let translate (globals, externs, functions) =
 	); eval
       | A.Call ("putchar", [e]) ->
          (*TODO-ADAM: throwing away values*)
-         let (actual,_,_) = expr builder e 
-      | A.Call ("getchar", []) ->		
-         let (actual,_,_) = expr builder e 
+         let (actual,_,_) = expr builder e in 
 	let actual' = List.hd actual in
          ([L.build_call putchar_func [|actual'|] "putchar" builder], A.Primitive, [0])
+      | A.Call ("getchar", []) ->
+         ([L.build_call getchar_func [||] "getchar" builder], A.Primitive, [0])
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (fun a ->
