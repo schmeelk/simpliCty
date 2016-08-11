@@ -77,9 +77,9 @@ parameter_list:
   | parameter_list COMMA  parameter { $3 :: $1 }
   
 parameter:
-    typ_specifier ID                          { ($1,$2, Primitive, []) }
-  | typ_specifier LBRACKET RBRACKET ID        { ($1,$4, Array,     []) }
-  | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     [$3]) }
+    typ_specifier ID                          { ($1,$2, Primitive,  0) }
+  | typ_specifier LBRACKET RBRACKET ID        { ($1,$4, Array,      0) }
+  | typ_specifier arr_size_decl ID { ($1,$3, Array,     $2) }
 
 typ_specifier:
     INT   { Int }
@@ -93,22 +93,20 @@ declaration_list:
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-  | typ_specifier ID SEMI                                 { ($1, $2, Primitive, [], []) }
-  | typ_specifier ID ASSIGNREG primary SEMI               { ($1, $2, Primitive, [], [$4]) }
-  | typ_specifier size_decl ID SEMI                       { ($1, $3, Array,     $2, []) }
-  | typ_specifier size_decl ID ASSIGNREG decl_assign SEMI { ($1, $3, Array,     $2, $5) }
+    typ_specifier ID SEMI                                                    { ($1, $2, Primitive, 0, DeclAssnNo,  []) }
+  | typ_specifier ID ASSIGNREG primary SEMI                                  { ($1, $2, Primitive, 0, DeclAssnYes, [$4]) }
+  | typ_specifier arr_size_decl ID SEMI                           { ($1, $3, Array,    $2, DeclAssnNo,  []) }
+  | typ_specifier arr_size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    $2, DeclAssnYes, $5) }
 
-decl_assign:
-    /*primary                     {[$1] }
-  |*/ OPENARR arr_assign CLOSEARR {List.rev $2}
-  
+decl_assign_arr:
+    OPENARR arr_assign CLOSEARR {List.rev $2}
+
 arr_assign:
     primary {[$1]}
   | arr_assign COMMA primary {$3::$1}
 
-size_decl:
-    LBRACKET INTLIT RBRACKET {[$2]}
-  | size_decl  LBRACKET INTLIT RBRACKET{ $3 :: $1 }
+arr_size_decl:
+    LBRACKET INTLIT RBRACKET {$2}
 
 statement_list:
     /* nothing */  { [] }
@@ -132,10 +130,10 @@ expression_opt:
   | expression    { $1 }
 
 expression:
-    primary                          { Primary($1) }
-  | LPAREN expression RPAREN         { $2 }
+    primary                      { Primary($1) }
+  | LPAREN expression RPAREN     { $2 }
   | OPENARR expression_list CLOSEARR {ArrLit($2)}
-  | lvalue LBRACKET arr_pos RBRACKET { Lvarr($1,List.rev $3) }
+  | lvalue LBRACKET expression RBRACKET { Lvarr($1,$3) }
   | expression PLUS   expression { Binop($1, Add,     $3) }
   | expression MINUS  expression { Binop($1, Sub,     $3) }
   | expression TIMES  expression { Binop($1, Mult,    $3) }
@@ -170,10 +168,6 @@ primary:
   | TRUE     { BoolLit(true) }
   | FALSE    { BoolLit(false) }
   | lvalue   { Lvalue($1) }
-
-arr_pos:
-    LBRACKET expression RBRACKET         {[$2]}
-  | arr_pos LBRACKET expression RBRACKET {$3::$1}
 
 lvalue:
     ID                              { Id($1) }

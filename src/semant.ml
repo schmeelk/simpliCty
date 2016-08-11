@@ -27,13 +27,13 @@ let check (globals, externs, functions) =
 
   (* Raise an exception if a given binding is to a void type *)
   let snd_of_four (_,id,_,_) = id in
-  let snd_of_five (_, id, _, _, _) = id in
+  let snd_of_six (_, id, _, _, _, _) = id in
   let check_not_void_four exceptf = function
       (Void, n, _, _) -> raise (Failure (exceptf n))
     | _ -> ()
   in
-  let check_not_void_five exceptf = function
-      (Void, n, _, _, _) -> raise (Failure (exceptf n))
+  let check_not_void_six exceptf = function
+      (Void, n, _, _, _, _) -> raise (Failure (exceptf n))
     | _ -> ()
   in
   
@@ -44,8 +44,8 @@ let check (globals, externs, functions) =
   in
    
   (**** Checking Global Variables ****)
-  List.iter (check_not_void_five (fun n -> "illegal void global " ^ n)) globals;
-  report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd_of_five globals);
+  List.iter (check_not_void_six (fun n -> "illegal void global " ^ n)) globals;
+  report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd_of_six globals);
 
   (**** Checking Functions ****)
   if List.mem "putchar" (List.map (fun fd -> fd.fname) functions)
@@ -59,13 +59,13 @@ let check (globals, externs, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.add "print"
-     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, [])];
+     { typ = Void; fname = "print"; formals = [(Int, "x", Primitive, 0)];
        locals = []; body = [] } (StringMap.singleton "printb"
-     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, [])];
+     { typ = Void; fname = "printb"; formals = [(Bool, "x", Primitive, 0)];
        locals = []; body = [] })
   in
   let built_in_decls =  StringMap.add "putchar"
-     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, [])];
+     { typ = Void; fname = "putchar"; formals = [(Int, "x", Primitive, 0)];
        locals = []; body = [] } built_in_decls
   in 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
@@ -90,20 +90,20 @@ let check (globals, externs, functions) =
     report_duplicate (fun n -> "duplicate formal " ^ n ^ " in " ^ func.fname)
       (List.map snd_of_four func.formals);
 
-    List.iter (check_not_void_five (fun n -> "illegal void local " ^ n ^
+    List.iter (check_not_void_six (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname)) func.locals;
 
     report_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname)
-      (List.map snd_of_five func.locals);
+      (List.map snd_of_six func.locals);
 
     (* Type of each variable (global, formal, or local *)
-    let symbols = List.fold_left (fun m (t, n, _, _, _) -> StringMap.add n t m)
+    let symbols = List.fold_left (fun m (t, n, _, _, _, _) -> StringMap.add n t m)
         StringMap.empty globals
     in
     let symbols = List.fold_left (fun m (t, n, _, _) -> StringMap.add n t m)
 	symbols func.formals
     in
-    let symbols = List.fold_left (fun m (t, n, _, _, _) -> StringMap.add n t m)
+    let symbols = List.fold_left (fun m (t, n, _, _, _, _) -> StringMap.add n t m)
         symbols func.locals
     in
 
