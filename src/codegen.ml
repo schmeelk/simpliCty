@@ -27,7 +27,6 @@ module StringMap = Map.Make(String)
 let translate (structs, globals, externs, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
-  and struct_t = L.struct_type context
   and i32_t  = L.i32_type   context
   and f32_t  = L.float_type context
   and i1_t   = L.i1_type    context
@@ -80,12 +79,30 @@ let translate (structs, globals, externs, functions) =
 
   in
 
-  (*let struct_decls =
-      let struct_decl name mem_list =
-        let  *) 
-  let llvalue_t = L.named_struct_type context "value_t" in
+  let struct_decls =
+    let struct_decl m (name, member_list) =
+      let member_decl_list =
+        List.map (fun d ->
+          (match d with typ,_,_,_,_,_ -> (match typ with
+            A.Int -> i32_t
+          | A.Float -> f32_t
+          | A.Char  -> i32_t
+          | A.Bool  -> i1_t
+          | A.Void  -> void_t )
+          )
+        ) member_list in
+      let member_decl_array = Array.of_list member_decl_list in
+      let llvalue_t = L.named_struct_type context name in
+      L.struct_set_body llvalue_t member_decl_array false;
+      ignore(L.declare_global llvalue_t name the_module);
+      StringMap.add name (name, member_decl_array) m
+    in
+  List.fold_left struct_decl StringMap.empty structs in
+
+  (*let llvalue_t = L.named_struct_type context "MyStruct" in
   let value_t_elts = [| i32_t; i32_t |] in
-  L.struct_set_body llvalue_t value_t_elts true;
+  L.struct_set_body llvalue_t value_t_elts false;
+  L.declare_global llvalue_t "MyStruct" the_module;*)
 
   (* Declare each global variable; remember its value in a map *)
   (*TODO-ADAM: global scoped arrays*)
@@ -97,7 +114,7 @@ let translate (structs, globals, externs, functions) =
       | _       -> L.const_int   typ' (match assign with A.DeclAssnYes -> (match values with [p] -> primary_decompose p | _ -> 0) | _ -> 0)
       ) in
       let addr = L.define_global name init the_module in
-      StringMap.add name (addr, A.Primitive, 0) m   
+      StringMap.add name (addr, A.Primitive, 0) m
     in
     List.fold_left global_var StringMap.empty globals in
 

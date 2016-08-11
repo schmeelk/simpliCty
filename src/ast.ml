@@ -10,7 +10,7 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
-type decl = Primitive | Array | Struct
+type decl = Primitive | Array (*| Struct*)
 
 type decl_assn = DeclAssnYes | DeclAssnNo
 
@@ -88,7 +88,7 @@ type program = struct_declaration list * declaration list * extern_func_decl lis
 let string_of_decl = function
     Primitive -> "prime"
   | Array -> "array"
-  | Struct -> "struct"
+  (*| Struct -> "struct"*)
 
 let string_of_op = function
     Add     -> "+"
