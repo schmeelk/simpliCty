@@ -10,7 +10,7 @@ Purpose:  * Generate abstract syntax tree
 Modified: 2016-07-25
 *)
 
-type decl = Primitive | Array (* | Struct *)
+type decl = Primitive | Array | Struct
 
 type decl_assn = DeclAssnYes | DeclAssnNo
 
@@ -51,7 +51,11 @@ type parameter = typ * string * decl * int
 
 type declaration = typ * string * decl * int * decl_assn * (primary list)
 
+type struct_member = typ * string * decl * int
+
 type function_declaration = typ * string * decl * expr
+
+type struct_declaration = string * (struct_member list)
 
 type stmt =
     Block of stmt list
@@ -77,14 +81,14 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = declaration list * extern_func_decl list * func_decl list
+type program = struct_declaration list * declaration list * extern_func_decl list * func_decl list
 
 (* Pretty-printing functions *)
 
 let string_of_decl = function
     Primitive -> "prime"
   | Array -> "array"
-  (*| Struct -> "struct"*)
+  | Struct -> "struct"
 
 let string_of_op = function
     Add     -> "+"
@@ -146,6 +150,7 @@ let rec string_of_expr = function
   | Call(f, el)         ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^")"
   | Noexpr              -> ""
+
 let rec string_of_stmt = function
     Block(stmts)        ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
@@ -186,7 +191,10 @@ let string_of_extern_fdecl efdecl =
   efdecl.e_fname ^ "(" ^ String.concat ", " (List.map snd_of_four efdecl.e_formals) ^
   ");\n"
 
-let string_of_program (vars, externs, funcs) =
+(*let string_of_struct structs =*)
+
+
+let string_of_program (_, vars, externs, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_extern_fdecl externs) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)

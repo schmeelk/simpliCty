@@ -60,6 +60,7 @@ rule token = parse
 | "true"   { TRUE }
 | "false"  { FALSE }
 | "extern" { EXTERN }
+| "struct" { STRUCT }
 | ['0'-'9']+ as lxm { INTLIT(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | '\''['a'-'z' 'A'-'Z' ' ' '!' '0'-'9']*'\'' as lxm { INTLIT(int_of_char lxm.[1]) }

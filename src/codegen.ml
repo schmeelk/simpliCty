@@ -24,9 +24,10 @@ module L = Llvm
 module A = Ast
 module StringMap = Map.Make(String)
 
-let translate (globals, externs, functions) =
+let translate (structs, globals, externs, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
+  and struct_t = L.struct_type context
   and i32_t  = L.i32_type   context
   and f32_t  = L.float_type context
   and i1_t   = L.i1_type    context
@@ -78,6 +79,10 @@ let translate (globals, externs, functions) =
     ) addr builder
 
   in
+
+(*  let struct_decls =
+      let struct_decl m sdecl =
+        let  *)
  
   (* Declare each global variable; remember its value in a map *)
   (*TODO-ADAM: global scoped arrays*)

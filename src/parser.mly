@@ -18,7 +18,7 @@ open Ast
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN BREAK CONTINUE IF ELSE FOR WHILE INT FLOAT BOOL VOID CHAR
+%token RETURN BREAK CONTINUE IF ELSE FOR WHILE INT FLOAT BOOL VOID CHAR STRUCT
 %token PRINT EXTERN
 %token <int> INTLIT
 %token <string> ID
@@ -49,10 +49,11 @@ program:
   modul_definitions EOF { $1 }
 
 modul_definitions:
-    /* nothing */ { [], [], [] }
- | modul_definitions declaration     { let (a, b, c) = $1 in ($2 :: a), b, c }
- | modul_definitions extern_func_decl { let (a, b, c) = $1 in a, ($2 :: b), c }
- | modul_definitions func_definition { let (a, b, c) = $1 in a, b, ($2 :: c) }
+    /* nothing */ { [], [], [], [] }
+ | modul_definitions struct_declaration { let (a, b, c, d) = $1 in ($2 :: a), b, c, d}
+ | modul_definitions declaration     { let (a, b, c, d) = $1 in a, ($2 :: b), c, d }
+ | modul_definitions extern_func_decl { let (a, b, c, d) = $1 in a, b, ($2 :: c), d }
+ | modul_definitions func_definition { let (a, b, c, d) = $1 in a, b, c, ($2 :: d) }
 
 func_definition:
    typ_specifier ID LPAREN parameter_list_opt RPAREN LBRACE declaration_list statement_list RBRACE
@@ -75,8 +76,16 @@ parameter_list_opt:
 parameter_list:
   | parameter { [$1] }
   | parameter_list COMMA  parameter { $3 :: $1 }
-  
+
+struct_member_list:
+  | struct_member { [$1] }
+  | struct_member_list SEMI  struct_member { $3 :: $1 }
+ 
 parameter:
+    typ_specifier ID                          { ($1,$2, Primitive,  0) }
+  | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     $3) }
+
+struct_member:
     typ_specifier ID                          { ($1,$2, Primitive,  0) }
   | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     $3) }
 
@@ -96,6 +105,9 @@ declaration:
   | typ_specifier ID ASSIGNREG primary SEMI                                  { ($1, $2, Primitive, 0, DeclAssnYes, [$4]) }
   | typ_specifier LBRACKET INTLIT RBRACKET ID SEMI                           { ($1, $5, Array,    $3, DeclAssnNo,  []) }
   | typ_specifier LBRACKET INTLIT RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array,    $3, DeclAssnYes, $7) }
+ 
+struct_declaration:
+    STRUCT ID LBRACE struct_member_list RBRACE SEMI { ($2, List.rev $4) }
 
 decl_assign_arr:
     LBRACE arr_assign RBRACE { List.rev $2 }
