@@ -12,8 +12,6 @@ Modified: 2016-07-25
 
 type decl = Primitive | Array (* | Struct *)
 
-type decl_assn = DeclAssnYes | DeclAssnNo
-
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
 
@@ -40,8 +38,8 @@ type primary =
 
 type expr =
     Primary of primary
-	| ArrLit of expr list
-  | Lvarr of lvalue * expr
+  | ArrLit of expr list
+  | Lvarr of lvalue * (expr list)
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Crement of crementDir * crement * expr
@@ -49,9 +47,9 @@ type expr =
   | Call of string * expr list
   | Noexpr
 
-type parameter = typ * string * decl * int
+type parameter = typ * string * decl * (int list)
 
-type declaration = typ * string * decl * int * decl_assn * (primary list)
+type declaration = typ * string * decl * (int list) * (primary list)
 
 type function_declaration = typ * string * decl * expr
 
@@ -138,8 +136,8 @@ let rec string_of_expr = function
       string_of_primary l
   | ArrLit(lp) ->
 	"{|"^ String.concat ", " (List.map string_of_expr lp) ^ "|}"
-  | Lvarr(lv, e)        ->
-      string_of_lvalue lv ^"["^ string_of_expr e ^"]"
+  | Lvarr(lv, le)        ->
+      string_of_lvalue lv ^"["^ String.concat "][" (List.map string_of_expr le) ^"]"
   | Binop(e1, o, e2)    ->
       string_of_expr e1 ^" "^ string_of_op o ^" "^ string_of_expr e2
   | Unop(o, e)          ->
@@ -178,23 +176,22 @@ let string_of_typ = function
   | Bool  -> "bool"
   | Void  -> "void"
 
-let string_of_vdecl (t, id, dcl, size, is_assn, prim_list) =
+let string_of_vdecl (t, id, decl, size_list, prim_list) =
    let size' =
-     if dcl = Primitive then ""
-     else "["^ string_of_int size ^"]"
+     if decl = Primitive then ""
+     else "["^ string_of_int (List.hd size_list) ^"]"
    and assn =
-     if is_assn = DeclAssnNo then ""
+     if List.length prim_list = 0 then ""
      else
        let value = 
-         if dcl = Primitive then string_of_primary (List.hd prim_list)
+         if decl = Primitive then string_of_primary (List.hd prim_list)
          else "{|"^ String.concat ", " (List.map string_of_primary prim_list) ^ "|}"
        in
        " = " ^ value
    in
    string_of_typ t ^ size' ^" "^ id ^ assn ^";\n"
 
-let snd_of_four (_,id,_,_) = id
-let snd_of_six (_, id, _, _, _, _) = id 
+let snd_of_four (_,id,_,_) = id 
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
