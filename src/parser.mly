@@ -13,7 +13,7 @@ Modified: 2016-07-25
 open Ast
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT OPENARR CLOSEARR
 %token PLUS MINUS TIMES DIVIDE MODULO
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
@@ -78,7 +78,8 @@ parameter_list:
   
 parameter:
     typ_specifier ID                          { ($1,$2, Primitive,  0) }
-  | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     $3) }
+  | typ_specifier LBRACKET RBRACKET ID        { ($1,$4, Array,      0) }
+  | typ_specifier arr_size_decl ID { ($1,$3, Array,     $2) }
 
 typ_specifier:
     INT   { Int }
@@ -94,15 +95,18 @@ declaration_list:
 declaration:
     typ_specifier ID SEMI                                                    { ($1, $2, Primitive, 0, DeclAssnNo,  []) }
   | typ_specifier ID ASSIGNREG primary SEMI                                  { ($1, $2, Primitive, 0, DeclAssnYes, [$4]) }
-  | typ_specifier LBRACKET INTLIT RBRACKET ID SEMI                           { ($1, $5, Array,    $3, DeclAssnNo,  []) }
-  | typ_specifier LBRACKET INTLIT RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array,    $3, DeclAssnYes, $7) }
+  | typ_specifier arr_size_decl ID SEMI                           { ($1, $3, Array,    $2, DeclAssnNo,  []) }
+  | typ_specifier arr_size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    $2, DeclAssnYes, $5) }
 
 decl_assign_arr:
-    LBRACE arr_assign RBRACE { List.rev $2 }
+    OPENARR arr_assign CLOSEARR {List.rev $2}
 
 arr_assign:
-    primary                 { [$1] }
-  | arr_assign COMMA primary { $3 :: $1 }
+    primary {[$1]}
+  | arr_assign COMMA primary {$3::$1}
+
+arr_size_decl:
+    LBRACKET INTLIT RBRACKET {$2}
 
 statement_list:
     /* nothing */  { [] }
@@ -128,6 +132,8 @@ expression_opt:
 expression:
     primary                      { Primary($1) }
   | LPAREN expression RPAREN     { $2 }
+  | OPENARR expression_list CLOSEARR {ArrLit($2)}
+  | lvalue LBRACKET expression RBRACKET { Lvarr($1,$3) }
   | expression PLUS   expression { Binop($1, Add,     $3) }
   | expression MINUS  expression { Binop($1, Sub,     $3) }
   | expression TIMES  expression { Binop($1, Mult,    $3) }
@@ -143,16 +149,16 @@ expression:
   | expression OR     expression { Binop($1, Or,      $3) }
   | MINUS expression %prec NEG   { Unop(Neg, $2) }
   | NOT expression               { Unop(Not, $2) }
-  | PLUSPLUS lvalue              { Crement(Pre,  PlusPlus,   $2) }
-  | MINUSMINUS lvalue            { Crement(Pre,  MinusMinus, $2) }
-  | lvalue PLUSPLUS              { Crement(Post, PlusPlus,   $1) }
-  | lvalue MINUSMINUS            { Crement(Post, MinusMinus, $1) }
-  | lvalue ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
-  | lvalue ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
-  | lvalue ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
-  | lvalue ASSIGNMULT expression { Assign($1, AssnMult, $3) }
-  | lvalue ASSIGNDIV expression  { Assign($1, AssnDiv,  $3) }
-  | lvalue ASSIGNMOD  expression  { Assign($1, AssnMod,  $3) }
+  | PLUSPLUS expression          { Crement(Pre,  PlusPlus,   $2) }
+  | MINUSMINUS expression        { Crement(Pre,  MinusMinus, $2) }
+  | expression PLUSPLUS          { Crement(Post, PlusPlus,   $1) }
+  | expression MINUSMINUS        { Crement(Post, MinusMinus, $1) }
+  | expression ASSIGNREG expression  { Assign($1, AssnReg,  $3) }
+  | expression ASSIGNADD expression  { Assign($1, AssnAdd,  $3) }
+  | expression ASSIGNSUB expression  { Assign($1, AssnSub,  $3) }
+  | expression ASSIGNMULT expression { Assign($1, AssnMult, $3) }
+  | expression ASSIGNDIV expression  { Assign($1, AssnDiv,  $3) }
+  | expression ASSIGNMOD expression  { Assign($1, AssnMod,  $3) }
   | ID LPAREN expression_list_opt RPAREN { Call($1, $3) }
 
 primary:
@@ -164,8 +170,8 @@ primary:
   | lvalue   { Lvalue($1) }
 
 lvalue:
-    ID                           { Id($1) }
-  | ID LBRACKET INTLIT RBRACKET { Arr($1,$3) }
+    ID                              { Id($1) }
+  /*| ID LBRACKET expression RBRACKET { Arr($1,$3) }*/
 
 expression_list_opt:
     /* nothing */ { [] }

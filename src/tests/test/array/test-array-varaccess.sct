@@ -1,0 +1,16 @@
+void print(char[] str)
+{
+	int i;
+	while(str[i-1] != 10)
+	{
+		putchar(str[i++]);
+	}
+	return;
+}
+
+int main()
+{
+	char[13] str = {'H','e','l','l','o',' ','w','o','r','l','d','!',10};
+	print(str);
+	return 0;
+}

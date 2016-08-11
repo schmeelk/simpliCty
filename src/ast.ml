@@ -29,7 +29,7 @@ type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
 type lvalue = 
     Id of string
-  | Arr of string * int
+  (*| Arr of string * int *)
 
 type primary =
     IntLit of int
@@ -40,10 +40,12 @@ type primary =
 
 type expr =
     Primary of primary
+	| ArrLit of expr list
+  | Lvarr of lvalue * expr
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Crement of crementDir * crement * lvalue
-  | Assign of lvalue * assn * expr
+  | Crement of crementDir * crement * expr
+  | Assign of expr * assn * expr
   | Call of string * expr list
   | Noexpr
 
@@ -123,7 +125,6 @@ let string_of_assn = function
 
 let string_of_lvalue = function
     Id(s)    -> s
-  | Arr(s,_) -> s
 
 let string_of_primary = function
     IntLit(i)     -> string_of_int i 
@@ -133,19 +134,25 @@ let string_of_primary = function
   | Lvalue(l)     -> string_of_lvalue l
 
 let rec string_of_expr = function
-    Primary(l)          -> string_of_primary l
+    Primary(l)          ->
+      string_of_primary l
+  | ArrLit(lp) ->
+	"{|"^ String.concat ", " (List.map string_of_expr lp) ^ "|}"
+  | Lvarr(lv, e)        ->
+      string_of_lvalue lv ^"["^ string_of_expr e ^"]"
   | Binop(e1, o, e2)    ->
       string_of_expr e1 ^" "^ string_of_op o ^" "^ string_of_expr e2
-  | Unop(o, e)          -> string_of_uop o ^ string_of_expr e
-  | Crement (oD, o, lv) ->
-    (match oD with
-      Pre  -> string_of_crement o ^" "^ string_of_lvalue lv
-    | Post -> string_of_lvalue lv ^" "^ string_of_crement o
-    )
-  | Assign(lv, o, e)    -> string_of_lvalue lv ^" "^ string_of_assn o ^" "^ string_of_expr e
+  | Unop(o, e)          ->
+      string_of_uop o ^ string_of_expr e
+  | Crement(oD, o, e_lv)-> (match oD with
+      Pre  -> string_of_crement o ^" "^ string_of_expr e_lv
+    | Post -> string_of_expr e_lv ^" "^ string_of_crement o)
+  | Assign(e_lv, o, e)  ->
+      string_of_expr e_lv ^" "^ string_of_assn o ^" "^ string_of_expr e
   | Call(f, el)         ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^")"
   | Noexpr              -> ""
+
 let rec string_of_stmt = function
     Block(stmts)        ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^"}\n"
@@ -153,9 +160,12 @@ let rec string_of_stmt = function
   | Break               -> "break;\n";
   | Continue            -> "continue;\n";
   | Return(expr)        -> "return "^ string_of_expr expr ^";\n";
-  | If(e, s, Block([])) -> "if ("^ string_of_expr e ^")\n"^ string_of_stmt s
-  | If(e, s1, s2)       -> "if ("^ string_of_expr e ^")\n"^
-      string_of_stmt s1 ^"else\n"^ string_of_stmt s2
+  | If(e, s, Block([])) ->
+      "if ("^ string_of_expr e ^")\n"^ string_of_stmt s
+  | If(e, s1, s2)       ->
+      "if ("^ string_of_expr e ^")\n"^
+      string_of_stmt s1 ^
+      "else\n"^ string_of_stmt s2
   | For(e1, e2, e3, s)  ->
       "for (" ^ string_of_expr e1 ^" ; "^ string_of_expr e2 ^" ; "^
       string_of_expr e3  ^") "^ string_of_stmt s
@@ -168,7 +178,20 @@ let string_of_typ = function
   | Bool  -> "bool"
   | Void  -> "void"
 
-let string_of_vdecl (t, id, _ , _, _, _) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id, dcl, size, is_assn, prim_list) =
+   let size' =
+     if dcl = Primitive then ""
+     else "["^ string_of_int size ^"]"
+   and assn =
+     if is_assn = DeclAssnNo then ""
+     else
+       let value = 
+         if dcl = Primitive then string_of_primary (List.hd prim_list)
+         else "{|"^ String.concat ", " (List.map string_of_primary prim_list) ^ "|}"
+       in
+       " = " ^ value
+   in
+   string_of_typ t ^ size' ^" "^ id ^ assn ^";\n"
 
 let snd_of_four (_,id,_,_) = id
 let snd_of_six (_, id, _, _, _, _) = id 
