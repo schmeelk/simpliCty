@@ -27,6 +27,7 @@ module StringMap = Map.Make(String)
 let translate (structs, globals, externs, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "SimpliCty"
+  and named_struct = L.named_struct_type context
   and i32_t  = L.i32_type   context
   and f32_t  = L.float_type context
   and i1_t   = L.i1_type    context
@@ -92,9 +93,9 @@ let translate (structs, globals, externs, functions) =
           )
         ) member_list in
       let member_decl_array = Array.of_list member_decl_list in
-      let llvalue_t = L.named_struct_type context name in
+      let llvalue_t = named_struct name in
       L.struct_set_body llvalue_t member_decl_array false;
-      ignore(L.declare_global llvalue_t name the_module);
+      (*ignore(L.declare_global llvalue_t name the_module);*)
       StringMap.add name (name, member_decl_array) m
     in
   List.fold_left struct_decl StringMap.empty structs in
