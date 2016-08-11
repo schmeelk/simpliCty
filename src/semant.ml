@@ -123,8 +123,11 @@ let check (globals, externs, functions) =
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
         Primary p -> primary p
+<<<<<<< HEAD
       | ArrLit _ -> Int (*TODO-ADAM: TrASH*)
       | Lvarr(Id(s),_) -> type_of_identifier s (*TODO-ADAM: semantic checking*)
+=======
+>>>>>>> 245f40b47bfb8bbdcfb85262de1973d633fc0ca1
       | StringConv _ -> String
       | ListCreate _ -> Int
       | Binop(e1, op, e2) as e ->

@@ -220,6 +220,7 @@ let translate (globals, externs, functions) =
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
+<<<<<<< HEAD
         A.Primary p          -> primary builder p
       | A.StringConv p -> primary builder (A.CharLit p)
       | A.ListCreate p -> (L.const_int i32_t (List.length(p)), A.Primitive, (List.length(p)))
@@ -238,6 +239,21 @@ let translate (globals, externs, functions) =
             let (e',_,_) = expr builder e in
             List.hd e'
           ) e_list
+=======
+        A.Primary p -> primary builder p
+      | A.Noexpr -> (L.const_int i32_t 0, A.Primitive, 0)
+      | A.StringConv p -> primary builder (A.CharLit p)
+      | A.ListCreate p -> (L.const_int i32_t (List.length(p)), A.Primitive, (List.length(p)))  
+      | A.Binop (e1, op, e2) ->
+          let e1' = match (expr builder e1) with
+            (c , A.Primitive,_) -> c
+          | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
+            (*TODO-ADAM: this is a dummy for array math*)
+	  and e2' = match (expr builder e2) with
+            (c , A.Primitive,_) -> c
+          | (p , _,_)           -> L.const_inttoptr p (L.pointer_type i32_t)
+            (*TODO-ADAM: this is a dummy for array math*)
+>>>>>>> 245f40b47bfb8bbdcfb85262de1973d633fc0ca1
           in
           let e'' = (
             if List.length size = 2 then

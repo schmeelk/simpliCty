@@ -134,12 +134,16 @@ let string_of_primary = function
   | Lvalue(l)     -> string_of_lvalue l
 
 let rec string_of_expr = function
+<<<<<<< HEAD
     Primary(l)          ->
       string_of_primary l
   | ArrLit(lp) ->
 	"{|"^ String.concat ", " (List.map string_of_expr lp) ^ "|}"
   | Lvarr(lv, le)        ->
       string_of_lvalue lv ^"["^ String.concat "][" (List.map string_of_expr le) ^"]"
+=======
+    Primary(l)          -> string_of_primary l
+>>>>>>> 245f40b47bfb8bbdcfb85262de1973d633fc0ca1
   | StringConv(c) 	-> "'" ^ Char.escaped c ^ "'"
   | ListCreate(s) 	-> "{" ^ String.concat ", " (List.map string_of_expr s) ^ "}"
   | Binop(e1, o, e2)    ->
