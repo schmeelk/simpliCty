@@ -107,7 +107,8 @@ declaration:
   | typ_specifier LBRACKET INTLIT RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array,    $3, DeclAssnYes, $7) }
  
 struct_declaration:
-    STRUCT ID LBRACE struct_member_list RBRACE SEMI { ($2, List.rev $4) }
+    /*STRUCT ID LBRACE struct_member_list RBRACE SEMI { ($2, List.rev $4) }*/
+    STRUCT ID LBRACE declaration_list RBRACE SEMI { ($2, List.rev $4) }
 
 decl_assign_arr:
     LBRACE arr_assign RBRACE { List.rev $2 }

@@ -80,9 +80,12 @@ let translate (structs, globals, externs, functions) =
 
   in
 
-(*  let struct_decls =
-      let struct_decl m sdecl =
-        let  *)
+  (*let struct_decls =
+      let struct_decl name mem_list =
+        let  *) 
+  let my_type = L.struct_type context [| |]
+
+  in
  
   (* Declare each global variable; remember its value in a map *)
   (*TODO-ADAM: global scoped arrays*)
