@@ -11,8 +11,8 @@ void print(char[] s)
 
 int main()
 {
-	char[6] str = {'h','e','l','l','o',10};
-	char[6] ing = {'w','o','r','l','d',10};
+	char[6] str = {|'h','e','l','l','o',10|};
+	char[6] ing = {|'w','o','r','l','d',10|};
 	print(str);
 	print(ing);
 	str = ing;

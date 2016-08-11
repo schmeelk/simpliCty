@@ -21,6 +21,8 @@ rule token = parse
 | '['      { LBRACKET }
 | '''      { SINGLEQT }
 | ']'      { RBRACKET }
+	| "{|" {OPENARR}
+	| "|}" {CLOSEARR}
 | ';'      { SEMI }
 | ','      { COMMA }
 | '+'      { PLUS }

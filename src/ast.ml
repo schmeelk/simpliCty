@@ -40,6 +40,7 @@ type primary =
 
 type expr =
     Primary of primary
+	| ArrLit of expr list
   | Lvarr of lvalue * expr
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -124,7 +125,6 @@ let string_of_assn = function
 
 let string_of_lvalue = function
     Id(s)    -> s
-  (*| Arr(s,_) -> s*)
 
 let string_of_primary = function
     IntLit(i)     -> string_of_int i 
@@ -136,6 +136,8 @@ let string_of_primary = function
 let rec string_of_expr = function
     Primary(l)          ->
       string_of_primary l
+  | ArrLit(lp) ->
+	"{|"^ String.concat ", " (List.map string_of_expr lp) ^ "|}"
   | Lvarr(lv, e)        ->
       string_of_lvalue lv ^"["^ string_of_expr e ^"]"
   | Binop(e1, o, e2)    ->
@@ -185,7 +187,7 @@ let string_of_vdecl (t, id, dcl, size, is_assn, prim_list) =
      else
        let value = 
          if dcl = Primitive then string_of_primary (List.hd prim_list)
-         else "{"^ String.concat "" (List.map string_of_primary prim_list) ^ "}"
+         else "{|"^ String.concat ", " (List.map string_of_primary prim_list) ^ "|}"
        in
        " = " ^ value
    in
