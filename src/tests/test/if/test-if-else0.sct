@@ -1,13 +1,36 @@
+
+void printi(int val)
+{
+        char[10] stack;
+        int ptr;
+        if(val < 0)
+        {
+                putchar(45);
+                val *= -1;
+        }
+        while(val != 0 || ptr == 0)
+        {
+                stack[ptr++] = '0' + (val % 10);
+                val /= 10;
+        }
+        while(--ptr >= 0) putchar(stack[ptr]);
+        putchar(10);
+        return;
+}
+
+
+
 int main()
 {
-  int x = 0;
-  int y = 10;
-  if (x < y) 
-  {
-     x = 100;
-  }
-  else{
-     x = -1;
-  }
-  return 0;
+	int x = 0;
+	int y = 10;
+	if (x < y) 
+	{
+		x = 100;
+	}
+	else{
+		x = -1;
+	}
+	printi(x);
+	return 0;
 }

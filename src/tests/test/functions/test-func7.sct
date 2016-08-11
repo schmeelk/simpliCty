@@ -1,5 +1,24 @@
 int a;
 
+void printi(int val)
+{
+        char[10] stack;
+        int ptr;
+        if(val < 0)
+        {
+                putchar(45);
+                val *= -1;
+        }
+        while(val != 0 || ptr == 0)
+        {
+                stack[ptr++] = '0' + (val % 10);
+                val /= 10;
+        }
+        while(--ptr >= 0) putchar(stack[ptr]);
+        putchar(10);
+        return;
+}
+
 void foo(int c)
 {
   a = c + 42;
@@ -8,6 +27,6 @@ void foo(int c)
 int main()
 {
   foo(73);
-  print(a);
+  printi(a);
   return 0;
 }

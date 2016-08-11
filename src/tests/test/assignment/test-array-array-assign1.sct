@@ -1,10 +1,12 @@
 void print(char[] s)
 {
 	int i;
+	/*
 	while(s[i] != 10)
 	{
 		putchar(s[i++]);
 	}
+	*/
 	putchar(10);
 	return;
 }

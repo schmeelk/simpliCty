@@ -1,3 +1,22 @@
+void printi(int val)
+{
+        char[10] stack;
+        int ptr;
+        if(val < 0)
+        {
+                putchar(45);
+                val *= -1;
+        }
+        while(val != 0 || ptr == 0)
+        {
+                stack[ptr++] = '0' + (val % 10);
+                val /= 10;
+        }
+        while(--ptr >= 0) putchar(stack[ptr]);
+        putchar(10);
+        return;
+}
+
 int foo(int a)
 {
   return a;
@@ -5,5 +24,8 @@ int foo(int a)
 
 int main()
 {
+	int x = 5;
+	x = foo(x);
+	printi(x);
   return 0;
 }

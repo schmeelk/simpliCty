@@ -1,9 +1,30 @@
+void printi(int val)
+{
+        char[10] stack;
+        int ptr;
+        if(val < 0)
+        {
+                putchar(45);
+                val *= -1;
+        }
+        while(val != 0 || ptr == 0)
+        {
+                stack[ptr++] = '0' + (val % 10);
+                val /= 10;
+        }
+        while(--ptr >= 0) putchar(stack[ptr]);
+        putchar(10);
+        return;
+}
+
+
+
 void printem(int a, int b, int c, int d)
 {
-  print(a);
-  print(b);
-  print(c);
-  print(d);
+  printi(a);
+  printi(b);
+  printi(c);
+  printi(d);
 }
 
 int main()
