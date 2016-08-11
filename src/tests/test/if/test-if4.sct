@@ -1,27 +1,6 @@
-void printi(int val)
-{
-        char[10] stack;
-        int ptr;
-        if(val < 0)
-        {
-                putchar(45);
-                val *= -1;
-        }
-        while(val != 0 || ptr == 0)
-        {
-                stack[ptr++] = '0' + (val % 10);
-                val /= 10;
-        }
-        while(--ptr >= 0) putchar(stack[ptr]);
-        putchar(10);
-        return;
-}
-
-
-
 int main()
 {
-  if (false) printi(42); else printi(8);
-  printi(17);
+  if (false) print(42); else print(8);
+  print(17);
   return 0;
 }

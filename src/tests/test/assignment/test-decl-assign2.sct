@@ -1,29 +1,10 @@
-void printi(int val)
-{
-        char[10] stack;
-        int ptr;
-        if(val < 0)
-        {
-                putchar(45);
-                val *= -1;
-        }
-        while(val != 0 || ptr == 0)
-        {
-                stack[ptr++] = '0' + (val % 10);
-                val /= 10;
-        }
-        while(--ptr >= 0) putchar(stack[ptr]);
-        putchar(10);
-        return;
-}
-
 int main()
 {
 	int[5] a = {|5,7,4,3,9|};
-	int i;
-	for(;i < 5; i++)
-	{
-		printi(a[i]);
-	}
+	print (a[0]);
+	print (a[1]);
+	print (a[2]);
+	print (a[3]);
+	print (a[4]);
 	return 0;
 }

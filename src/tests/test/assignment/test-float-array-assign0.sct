@@ -1,64 +1,14 @@
 float f;
 int i;
+int main( ) {
+   int x;
+   float y;
 
-void printi(int val)
-{
-        char[10] stack;
-        int ptr;
-        if(val < 0)
-        {
-                putchar(45);
-                val *= -1;
-        }
-        while(val != 0 || ptr == 0)
-        {
-                stack[ptr++] = '0' + (val % 10);
-                val /= 10;
-        }
-        while(--ptr >= 0) putchar(stack[ptr]);
-        putchar(10);
-        return;
-}
-void printb(bool val)
-{
-	if(val)
-	{
-		putchar('t');
-		putchar('r');
-		putchar('u');
-	}
-	else
-	{
-		putchar('f');
-		putchar('a');
-		putchar('l');
-		putchar('s');
-	}
-	putchar('e');putchar(10);
-	return;
-}
+   f = 123.456;
+   i = 999;
+   x = i;
+   y = f;
 
-
-int main( )
-{
-	int x;
-	float y;
-
-	f = 123.456;
-	i = 999;
-	x = i;
-	y = f;
-
-	printi(x);
-	if(y == 123.456)
-	{
-		printb(true);
-	}
-	else
-	{
-		printb(false);
-	}
-
-	return 0;
+   return 0;
 }
 
