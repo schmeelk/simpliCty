@@ -77,15 +77,7 @@ parameter_list:
   | parameter { [$1] }
   | parameter_list COMMA  parameter { $3 :: $1 }
 
-struct_member_list:
-  | struct_member { [$1] }
-  | struct_member_list SEMI  struct_member { $3 :: $1 }
- 
 parameter:
-    typ_specifier ID                          { ($1,$2, Primitive,  0) }
-  | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     $3) }
-
-struct_member:
     typ_specifier ID                          { ($1,$2, Primitive,  0) }
   | typ_specifier LBRACKET INTLIT RBRACKET ID { ($1,$5, Array,     $3) }
 
@@ -107,7 +99,6 @@ declaration:
   | typ_specifier LBRACKET INTLIT RBRACKET ID ASSIGNREG decl_assign_arr SEMI { ($1, $5, Array,    $3, DeclAssnYes, $7) }
  
 struct_declaration:
-    /*STRUCT ID LBRACE struct_member_list RBRACE SEMI { ($2, List.rev $4) }*/
     STRUCT ID LBRACE declaration_list RBRACE SEMI { ($2, List.rev $4) }
 
 decl_assign_arr:
