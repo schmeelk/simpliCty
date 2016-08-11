@@ -106,7 +106,11 @@ let translate (globals, externs, functions) =
   (* Declare putchar(), which the putchar built-in function will call *)
   let putchar_t = L.function_type i32_t [| i32_t |] in
   let putchar_func = L.declare_function "putchar" putchar_t the_module in
-
+  
+  (* Declare getchar(), which the getchar built-in function will call *)		
+  let getchar_t = L.var_arg_function_type i32_t [| |] in		
+  let getchar_func = L.declare_function "getchar" getchar_t the_module in
+  
   (* Define each function (arguments and return type) so we can call it *)
   (*L.pointer_type (ltype_of_typ t)*)
   let param_type (typ,_,decl,_) =
@@ -347,7 +351,9 @@ let translate (globals, externs, functions) =
 	); eval
       | A.Call ("putchar", [e]) ->
          (*TODO-ADAM: throwing away values*)
-         let (actual,_,_) = expr builder e in
+         let (actual,_,_) = expr builder e 
+      | A.Call ("getchar", []) ->		
+         let (actual,_,_) = expr builder e 
 	let actual' = List.hd actual in
          ([L.build_call putchar_func [|actual'|] "putchar" builder], A.Primitive, [0])
       | A.Call (f, act) ->
