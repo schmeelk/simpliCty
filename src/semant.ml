@@ -136,9 +136,21 @@ let check (globals, externs, functions) =
           and t2 = expr e2 in
 	  (match op with
             Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Int -> Int
-	  | Equal | Neq when t1 = t2                               -> Bool
-	  | Less | Leq | Greater | Geq when t1 = Int && t2 = Int   -> Bool
-	  | And | Or when t1 = Bool && t2 = Bool                   -> Bool
+          | Add | Sub | Mult | Div | Mod when t1 = Float && t2 = Float -> Float
+          | Add | Sub | Mult | Div | Mod when t1 = Int && t2 = Float -> Float
+          | Add | Sub | Mult | Div | Mod when t1 = Float && t2 = Int -> Float
+          | Add | Sub | Mult | Div | Mod when t1 = Bool && (t2 = Int || t2 == Float) -> raise (Failure (
+              "illegal cast with operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
+              string_of_typ t2 ^" in "^ string_of_expr e
+            ))
+          | Add | Sub | Mult | Div | Mod when (t1 = Int || t1 = Float) && t2 = Bool -> raise (Failure (
+              "illegal cast with operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
+              string_of_typ t2 ^" in "^ string_of_expr e
+            ))
+          | Equal | Neq when t1 = t2                               -> Bool
+          | Less | Leq | Greater | Geq when t1 = Int && t2 = Int   -> Bool
+          | Less | Leq | Greater | Geq when t1 = Float && t2 = Float   -> Bool
+          | And | Or when t1 = Bool && t2 = Bool                   -> Bool
           | _                                                      -> raise (Failure (
               "illegal binary operator "^ string_of_typ t1 ^" "^ string_of_op op ^" "^
               string_of_typ t2 ^" in "^ string_of_expr e

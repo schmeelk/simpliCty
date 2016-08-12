@@ -36,8 +36,8 @@ let translate (globals, externs, functions) =
       A.Int   -> i32_t
     | A.Float -> f32_t
     | A.Char  -> i32_t
-    | A.Bool  -> i1_t
     | A.String -> i32_t
+    | A.Bool  -> i1_t
     | A.Void  -> void_t
   in
   let primary_decompose = function 
@@ -57,19 +57,19 @@ let translate (globals, externs, functions) =
   (* Store memory *) 
   let store_primitive addr typ' value builder =
     L.build_store (L.const_int typ' (if List.length value <> 0 then primary_decompose (List.hd value)
-    else primary_decompose (A.IntLit(0)))
+    else 0)
     ) addr builder
   and store_array_idx addr index typ' value builder =
     let i  = [|L.const_int i32_t index|]
     and v' = L.const_int typ' (if List.length value <> 0 then primary_decompose (List.hd value)
-    else 1)
+    else 0)
     in
     let addr' = L.build_in_bounds_gep addr i "storeArrIdx" builder in
     L.build_store v' addr' builder
   and store_float_primitive addr typ' value builder =
     L.build_store (L.const_float typ' (if List.length value <> 0
       then primary_float_decompose (List.hd value)
-     else -0.0)
+     else 0.0)
     ) addr builder
   and copy_array size old_addr new_addr builder =
     let rec copy_idx idx =(match idx with
@@ -107,11 +107,7 @@ let translate (globals, externs, functions) =
   (* Declare putchar(), which the putchar built-in function will call *)
   let putchar_t = L.function_type i32_t [| i32_t |] in
   let putchar_func = L.declare_function "putchar" putchar_t the_module in
-  
-  (* Declare getchar(), which the getchar built-in function will call *)		
-  let getchar_t = L.var_arg_function_type i32_t [| |] in		
-  let getchar_func = L.declare_function "getchar" getchar_t the_module in
-  
+
   (* Define each function (arguments and return type) so we can call it *)
   (*L.pointer_type (ltype_of_typ t)*)
   let param_type (typ,_,decl,_) =
@@ -210,16 +206,16 @@ let translate (globals, externs, functions) =
     (*Construct code for lvalues; return value pointed to*) 
  
     let primary builder = function
-      A.IntLit i   -> ([L.const_int i32_t i]                       , A.Primitive, [0])
-    | A.FloatLit f -> ([L.const_float f32_t f]                     , A.Primitive, [0])
-    | A.CharLit c  -> ([L.const_int i32_t (int_of_char c)]         , A.Primitive, [0])
-    | A.BoolLit b  -> ([L.const_int i1_t (if b then 1 else 0)]     , A.Primitive, [0])
+      A.IntLit i   -> ([L.const_int i32_t i]                       , A.Primitive, [0], i32_t)
+    | A.FloatLit f -> ([L.const_float f32_t f]                     , A.Primitive, [0], f32_t)
+    | A.CharLit c  -> ([L.const_int i32_t (int_of_char c)]         , A.Primitive, [0], i32_t)
+    | A.BoolLit b  -> ([L.const_int i1_t (if b then 1 else 0)]     , A.Primitive, [0], i1_t)
     | A.Lvalue (A.Id(s))  ->
         let addr = lookup_addr s and decl = lookup_decl s and size_list = lookup_size s
         in
         (match decl with
-          A.Primitive -> ([L.build_load addr "lv" builder], decl, size_list)
-        | A.Array     -> ([addr], decl, size_list))
+          A.Primitive -> ([L.build_load addr "lv" builder], decl, size_list, i32_t)
+        | A.Array     -> ([addr], decl, size_list, i32_t))
     in
 
     (* Construct code for an expression; return its value *)
@@ -227,17 +223,17 @@ let translate (globals, externs, functions) =
         A.Primary p          -> primary builder p
       | A.ArrLit lp ->
           let list_primary = List.fold_left (fun li p ->
-            let (p',_,_) = expr builder p in
+            let (p',_,_,_) = expr builder p in
               (List.hd p')::li
             ) [] lp in
-          (list_primary, A.Array, [List.length list_primary])
+          (list_primary, A.Array, [List.length list_primary], i32_t)
       | A.Lvarr (A.Id(lv), e_list)->
           let lv' = lookup_addr lv
           and decl = lookup_decl lv
           and size = lookup_size lv
           (*TODO-ADAM: throwing away values*)
           and pos_list = List.map (fun e ->
-            let (e',_,_) = expr builder e in
+            let (e',_,_,_) = expr builder e in
             List.hd e'
           ) e_list
           in
@@ -250,37 +246,70 @@ let translate (globals, externs, functions) =
           in
           (*let addr = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in
           let addr' = L.build_in_bounds_gep addr [|e'|] "arrIdx" builder in*)
-          (*let ad = L.build_in_bounds_gep lv' [|L.const_int i32_t 0|] "arrPtr" builder in*)
-          let addr' = L.build_in_bounds_gep lv' [|L.const_int i32_t 0; e''|] "arrIdx" builder in
-          ([L.build_load addr' "idxIn" builder],decl,[0])
-      | A.Noexpr             -> ([L.const_int i32_t 0], A.Primitive, [0])
+          let addr' = L.build_gep lv' [|e''|] "arrIdx" builder in
+          ([L.build_load addr' "idxIn" builder],decl,[0], i32_t)
+      | A.Noexpr             -> ([L.const_int i32_t 0], A.Primitive, [0], i32_t)
       | A.Binop (e1, op, e2) ->
-          (*TODO-ADAM: throwing away values*)
-          let (e1',_,_) = expr builder e1
-	  and (e2',_,_) = expr builder e2 in
-	let e1'' = List.hd e1' and e2'' = List.hd e2' in
-	  ([(match op with
-	    A.Add     -> L.build_add
-	  | A.Sub     -> L.build_sub
-	  | A.Mult    -> L.build_mul
-          | A.Div     -> L.build_sdiv
-          | A.Mod     -> L.build_srem
-	  | A.And     -> L.build_and
-	  | A.Or      -> L.build_or
-	  | A.Equal   -> L.build_icmp L.Icmp.Eq
-	  | A.Neq     -> L.build_icmp L.Icmp.Ne
-	  | A.Less    -> L.build_icmp L.Icmp.Slt
-	  | A.Leq     -> L.build_icmp L.Icmp.Sle
-	  | A.Greater -> L.build_icmp L.Icmp.Sgt
-	  | A.Geq     -> L.build_icmp L.Icmp.Sge
-	  ) e1'' e2'' "binop" builder], A.Primitive, [0])
+         let e1' =
+		let (t1,_,_,t2) = expr builder e1 in
+		((List.hd t1),t2)
+      (*match (expr builder e1) with
+            (c ,A.Primitive,_,e1_type) -> (c, e1_type)
+          | (p ,_,_,e1_type) ->   (L.const_ptrtoint (List.hd p) (i32_t), e1_type)
+	  *)and e2' =
+		let(t1,_,_,t2) = expr builder e2 in
+		((List.hd t1),t2)  (*match (expr builder e2) with
+            (c,A.Primitive,_,e2_type) -> (c, e2_type)
+          | (p,_,_,e2_type)           ->  (L.const_inttoptr (List.hd p) (i32_t), e2_type)
+          *)in
+	let flot = f32_t and iont = i32_t and ff = f32_t in
+	  let (e1', e2') = (match (snd e1', snd e2') with
+              ff, f32_t -> ((fst e1' , ff) , (fst e2' ,  f32_t))
+            | i32_t, f32_t -> ((L.const_sitofp (fst e1') f32_t,  f32_t), (fst e2' , f32_t))
+            | f32_t, i32_t -> ((fst e1', flot), (L.const_sitofp (fst e2') f32_t, f32_t))
+            | _ , _ -> ((fst e1', iont), (fst e2', iont))
+           ) in
+           (match snd e1', snd e2' with
+           ff,  f32_t ->
+               ([(match op with
+                  A.Add     -> L.build_fadd
+                | A.Sub     -> L.build_fsub
+                | A.Mult    -> L.build_fmul
+                | A.Div     -> L.build_fdiv
+                | A.Mod     -> L.build_frem
+                | A.And     -> L.build_and
+                | A.Or      -> L.build_or
+                | A.Equal   -> L.build_fcmp L.Fcmp.Ueq
+                | A.Neq     -> L.build_fcmp L.Fcmp.Une
+                | A.Less    -> L.build_fcmp L.Fcmp.Ult
+                | A.Leq     -> L.build_fcmp L.Fcmp.Ule
+                | A.Greater -> L.build_fcmp L.Fcmp.Ugt
+                | A.Geq     -> L.build_fcmp L.Fcmp.Uge)
+                 (fst e1') (fst e2') "tmp" builder], A.Primitive, [0], f32_t)
+           |  _,  _ ->
+                ([(match op with
+	          A.Add     -> L.build_add
+	        | A.Sub     -> L.build_sub
+	        | A.Mult    -> L.build_mul
+                | A.Div     -> L.build_sdiv
+                | A.Mod     -> L.build_srem
+	        | A.And     -> L.build_and
+	        | A.Or      -> L.build_or
+	        | A.Equal   -> L.build_icmp L.Icmp.Eq
+	        | A.Neq     -> L.build_icmp L.Icmp.Ne
+	        | A.Less    -> L.build_icmp L.Icmp.Slt
+	        | A.Leq     -> L.build_icmp L.Icmp.Sle
+	        | A.Greater -> L.build_icmp L.Icmp.Sgt
+	        | A.Geq     -> L.build_icmp L.Icmp.Sge)
+                 (fst e1') (fst e2') "tmp" builder], A.Primitive, [0], f32_t)
+        ) 
       | A.Unop(op, e_lv) ->
           (*TODO-ADAM: Semantic checking should make sure e_lv is an lv*)
-          let (e',_,_) = expr builder e_lv in
-	let e'' = List.hd e' in
+          let (e',_,_,typ) = expr builder e_lv in
+	let e'' = (List.hd e') in
 	  ([(match op with
 	    A.Neg     -> L.build_neg
-          | A.Not     -> L.build_not) e'' "unop" builder], A.Primitive, [0])
+          | A.Not     -> L.build_not) e'' "unop" builder], A.Primitive, [0], typ)
       | A.Crement(opDir, op, e_lv) ->
           (*TODO-ADAM: Semantic checking should make sure e_lv is an lv*)
           (match opDir with
@@ -288,8 +317,8 @@ let translate (globals, externs, functions) =
               A.PlusPlus   -> A.AssnAdd
             | A.MinusMinus -> A.AssnSub), (A.Primary (A.IntLit 1))))
           | A.Post ->
-              let (value,decl,_) = expr builder e_lv in
-              ignore(expr builder (A.Crement(A.Pre, op, e_lv))); (value, decl, [0])
+              let (value,decl,_,typ) = expr builder e_lv in
+              ignore(expr builder (A.Crement(A.Pre, op, e_lv))); (value, decl, [0], typ)
           )
       | A.Assign (e_lv, op, e) ->
           (*TODO-ADAM: Allow array assignment*)
@@ -301,8 +330,8 @@ let translate (globals, externs, functions) =
               and lvsize = lookup_size lvInner
               (*TODO-ADAM: throwing away values*)
               and pos_list = List.map (fun e->
-                let (e',_,_) = expr builder e in
-                List.hd e'
+                let (e',_,_,_) = expr builder e in
+                (List.hd e')
               ) eInner_list in
               let eI'' = (
                 if List.length lvsize = 2 then
@@ -334,16 +363,14 @@ let translate (globals, externs, functions) =
           (*let (eval',_,_) = eval in*)
           (match decl with
              A.Primitive ->
-               let eval' = match eval with (e,_,_)-> List.hd e in
+               let eval' = match eval with (e,_,_,_)-> List.hd e in
                ignore(L.build_store eval' addr builder)
            | A.Array ->
-               let (eval',_,siz) = eval in
+               let (eval',_,siz,typT) = eval in
                let full_siz = List.hd siz in
                if List.length eval' = 1 then
                  ignore(copy_array full_size (List.hd eval') addr builder)
                else
-                 (*TODO-ADAM: ASSUMING TYPE, NEED SUZANNA*)
-                 let typT = i32_t in
                  let arrLitAddr = L.build_array_alloca typT (L.const_int i32_t full_siz) "arrLit" builder in
                  ignore(List.fold_left (fun index _vals ->
                    let i = [|L.const_int i32_t index|] in
@@ -353,20 +380,18 @@ let translate (globals, externs, functions) =
 	); eval
       | A.Call ("putchar", [e]) ->
          (*TODO-ADAM: throwing away values*)
-         let (actual,_,_) = expr builder e in 
+         let (actual,_,_,_) = expr builder e in
 	let actual' = List.hd actual in
-         ([L.build_call putchar_func [|actual'|] "putchar" builder], A.Primitive, [0])
-      | A.Call ("getchar", []) ->
-         ([L.build_call getchar_func [||] "getchar" builder], A.Primitive, [0])
+         ([L.build_call putchar_func [|actual'|] "putchar" builder], A.Primitive, [0], i32_t)
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (fun a ->
-           match expr builder a with (p,_,_)->List.hd p) (List.rev act)) in
+           match expr builder a with (p,_,_,_)->List.hd p) (List.rev act)) in
 	 let result = (match fdecl.A.typ with
            A.Void -> ""
          | _ -> f ^ "_result") in
          (* TODO-ADAM: convert fdecl.A.typ to A.decl *)
-         ([L.build_call fdef (Array.of_list actuals) result builder], A.Primitive, [0])
+         ([L.build_call fdef (Array.of_list actuals) result builder], A.Primitive, [0], ltype_of_typ fdecl.A.typ)
     in
 
     (* Invoke "f builder" if the current block doesn't already
@@ -397,10 +422,10 @@ let translate (globals, externs, functions) =
           A.Void -> L.build_ret_void builder
         (*TODO-ADAM: return array*)
         (*TODO-ADAM: throwing away value*)
-        | _      -> L.build_ret (match expr builder e with (p,_,_)->List.hd p) builder); (builder, break_bb, cont_bb)
+        | _      -> L.build_ret (match expr builder e with (p,_,_,_)->List.hd p) builder); (builder, break_bb, cont_bb)
     | A.If (predicate, then_stmt, else_stmt) ->
         (*TODO-ADAM: throwing away value*)
-        let (bool_val,_,_) = expr builder predicate in
+        let (bool_val,_,_,_) = expr builder predicate in
 	let bool_val' = List.hd bool_val in
         let if_merge_bb = L.append_block context "if.else.merge" the_function in
 
@@ -434,7 +459,7 @@ let translate (globals, externs, functions) =
         }*)
         let pred_builder = L.builder_at_end context while_pred_bb in
         (*TODO-ADAM: throwing away value*)
-        let bool_val = match expr pred_builder predicate with (p,_,_)->List.hd p in
+        let bool_val = match expr pred_builder predicate with (p,_,_,_)->List.hd p in
         ignore (L.build_cond_br bool_val while_body_bb while_merge_bb pred_builder);
         (*ignore(L.replace_all_uses_with (L.build_br dummy_bb) (L.build_br while_merge_bb));*)
         ((L.builder_at_end context while_merge_bb), break_builder, continue_builder)
