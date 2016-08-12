@@ -21,7 +21,7 @@ type crement = PlusPlus | MinusMinus
 
 type crementDir = Pre | Post
 
-type typ = Int | Float | Bool | Void | Char
+type typ = Int | Float | Bool | Void | Char | String
 
 type assn = AssnReg | AssnAdd | AssnSub | AssnMult | AssnDiv | AssnMod
 
@@ -45,6 +45,7 @@ type expr =
   | Crement of crementDir * crement * expr
   | Assign of expr * assn * expr
   | Call of string * expr list
+  | StringConv of char
   | Noexpr
 
 type parameter = typ * string * decl * (int list)
@@ -134,6 +135,7 @@ let string_of_primary = function
 let rec string_of_expr = function
     Primary(l)          ->
       string_of_primary l
+  | StringConv(s) 	-> string_of_int(Char.code s)
   | ArrLit(lp) ->
 	"{|"^ String.concat ", " (List.map string_of_expr lp) ^ "|}"
   | Lvarr(lv, le)        ->
@@ -174,6 +176,7 @@ let string_of_typ = function
   | Float -> "float"
   | Char  -> "char"
   | Bool  -> "bool"
+  | String -> "string"
   | Void  -> "void"
 
 let string_of_vdecl (t, id, decl, size_list, prim_list) =
