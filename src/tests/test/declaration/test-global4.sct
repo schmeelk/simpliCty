@@ -1,4 +1,4 @@
-char[3] a = {'a','b','c'};
+char[3] a = {|'a','b','c'|};
 
 int main()
 {

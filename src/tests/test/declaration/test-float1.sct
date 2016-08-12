@@ -2,6 +2,7 @@ int main( ) {
 
    float f;
    int i;
+   putchar(65);
    return 0;
 }
 
