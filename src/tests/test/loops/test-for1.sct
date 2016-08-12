@@ -1,9 +1,9 @@
 int main()
 {
   int i;
-  for (i = 0 ; i < 5 ; i = i + 1) {
-    print(i);
+  for (i =65 ; i < 70 ; i = i + 1) {
+    putchar(i);
   }
-  print(42);
+  putchar(65);
   return 0;
 }

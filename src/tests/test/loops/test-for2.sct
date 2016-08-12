@@ -1,11 +1,11 @@
 int main()
 {
   int i;
-  i = 0;
+  i = 65;
   for ( ; i < 5; ) {
-    print(i);
+    putchar(i);
     i = i + 1;
   }
-  print(42);
+  putchar(65);
   return 0;
 }

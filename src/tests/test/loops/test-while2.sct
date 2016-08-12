@@ -11,6 +11,6 @@ int foo(int a)
 
 int main()
 {
-  print(foo(7));
+  putchar(foo(30));
   return 0;
 }
