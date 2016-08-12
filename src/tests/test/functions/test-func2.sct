@@ -2,7 +2,7 @@
 
 int fun(int x, int y)
 {
-  return 0;
+  return 65;
 }
 
 int main()
@@ -12,7 +12,7 @@ int main()
 
   fun(i = 2, i = i+1);
 
-  print(i);
+  putchar(i);
   return 0;
 }
 

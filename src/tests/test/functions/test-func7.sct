@@ -7,7 +7,7 @@ void foo(int c)
 
 int main()
 {
-  foo(73);
-  print(a);
+  foo(30);
+  putchar(a);
   return 0;
 }

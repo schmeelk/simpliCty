@@ -11,19 +11,25 @@ Modified: 2016-07-25
 
 %{
 open Ast
+
+let explode s = let rec f t = function
+    | -1 -> t
+    | h -> f (s.[h] :: t) (h - 1)
+  in f [] (String.length s - 1)
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT OPENARR CLOSEARR
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA SINGLEQT DOUBLEQT OPENARR CLOSEARR
 %token PLUS MINUS TIMES DIVIDE MODULO
 %token NOT PLUSPLUS MINUSMINUS
 %token ASSIGNREG ASSIGNADD ASSIGNSUB ASSIGNMULT ASSIGNDIV ASSIGNMOD
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN BREAK CONTINUE IF ELSE FOR WHILE INT FLOAT BOOL VOID CHAR
+%token RETURN BREAK CONTINUE IF ELSE FOR WHILE INT FLOAT BOOL VOID CHAR STRING
 %token PRINT EXTERN
 %token <int> INTLIT
 %token <string> ID
 %token <float> FLOATLIT
 %token <char> CHARLIT
+%token <string> STRINGS
 %token EOF
 
 %nonassoc NOELSE
@@ -77,7 +83,7 @@ parameter_list:
   | parameter_list COMMA  parameter { $3 :: $1 }
   
 parameter:
-    typ_specifier ID                   { ($1,$2, Primitive, [0]) }
+    typ_specifier ID                   { ($1,$2, Primitive, [1]) }
   | typ_specifier LBRACKET RBRACKET ID { ($1,$4, Array,     [0]) }
   | typ_specifier size_decl ID         { ($1,$3, Array,     List.rev $2) }
 
@@ -86,6 +92,7 @@ typ_specifier:
   | FLOAT { Float }
   | CHAR  { Char }
   | BOOL  { Bool }
+  | STRING { String }
   | VOID  { Void }
 
 declaration_list:
@@ -93,7 +100,7 @@ declaration_list:
   | declaration_list declaration { $2 :: $1 }
 
 declaration:
-    typ_specifier ID SEMI                                     { ($1, $2, Primitive, [0],  []) }
+    typ_specifier ID SEMI                                     { ($1, $2, Primitive, [0], [] ) }
   | typ_specifier ID ASSIGNREG primary SEMI                   { ($1, $2, Primitive, [0], [$4]) }
   | typ_specifier size_decl ID SEMI                           { ($1, $3, Array,    List.rev $2,  []) }
   | typ_specifier size_decl ID ASSIGNREG decl_assign_arr SEMI { ($1, $3, Array,    List.rev $2, $5) }
@@ -103,7 +110,9 @@ decl_assign_arr:
 
 arr_assign:
     primary {[$1]}
+  | arr_assign STRINGS                      { (List.map (fun x -> (CharLit(x))) (explode $2)) }     
   | arr_assign COMMA primary {$3::$1}
+
 
 size_decl:
     LBRACKET INTLIT RBRACKET           { [$2] }
@@ -184,4 +193,5 @@ expression_list_opt:
 
 expression_list:
     expression                       { [$1] }
+  | STRINGS                      { ((List.map (fun x -> (StringConv(x))) (explode $1))) }  
   | expression_list COMMA expression { $3 :: $1 }

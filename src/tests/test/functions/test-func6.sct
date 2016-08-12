@@ -4,6 +4,6 @@ int bar(int a, bool b, int c) { return a + c; }
 
 int main()
 {
-  print(bar(17, false, 25));
+  putchar(bar(30, false, 35));
   return 0;
 }

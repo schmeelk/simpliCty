@@ -1,0 +1,176 @@
+Testing Loops
+test-for-break...OK
+test-for-break0...OK
+test-for-break1...OK
+test-for-break2...OK
+test-for-continue...OK
+test-for-continue0...OK
+test-for-continue1...OK
+test-for-for-break0...OK
+test-for-for-continue0...OK
+test-for0...OK
+test-for1...OK
+test-for2...OK
+test-for3...OK
+test-for4...OK
+test-for5...OK
+test-for6...OK
+test-for7...OK
+test-while-break...OK
+test-while-break0...OK
+test-while-break1...OK
+test-while-continue...OK
+test-while-while-break0...OK
+test-while-while-continue0...OK
+test-while0...OK
+test-while1...OK
+test-while2...OK
+test-while3...OK
+fail-for1...OK
+fail-for2...OK
+fail-for3...OK
+fail-for4...OK
+fail-for5...OK
+fail-while1...OK
+fail-while2...OK
+Testing Declarations
+test-char0...OK
+test-float-global...FAILED
+  ../simplicty failed on ../simplicty test/declaration/test-float-global.sct > ./test-output/test-float-global.ll
+test-float1...OK
+test-float2...FAILED
+  ../simplicty failed on ../simplicty test/declaration/test-float2.sct > ./test-output/test-float2.ll
+test-global1...FAILED
+  ../simplicty failed on ../simplicty test/declaration/test-global1.sct > ./test-output/test-global1.ll
+test-global2...FAILED
+  ../simplicty failed on ../simplicty test/declaration/test-global2.sct > ./test-output/test-global2.ll
+test-global3...FAILED
+  ../simplicty failed on ../simplicty test/declaration/test-global3.sct > ./test-output/test-global3.ll
+test-global4...OK
+test-local1...OK
+test-local2...OK
+test-var1...OK
+test-var2...FAILED
+  ../simplicty failed on ../simplicty test/declaration/test-var2.sct > ./test-output/test-var2.ll
+fail-*...FAILED
+  fail-*.err differs
+Testing Print
+test-char...OK
+test-char2...OK
+test-hello-world...FAILED
+  ../simplicty failed on ../simplicty test/print/test-hello-world.sct > ./test-output/test-hello-world.ll
+test-hello...OK
+test-print...OK
+test-putchar...OK
+fail-*...FAILED
+  fail-*.err differs
+Testing Scan
+test-char...OK
+test-char2...OK
+test-hello-world...FAILED
+  ../simplicty failed on ../simplicty test/print/test-hello-world.sct > ./test-output/test-hello-world.ll
+test-hello...OK
+test-print...OK
+test-putchar...OK
+fail-*...FAILED
+  fail-*.err differs
+Testing Array
+test-array-float...FAILED
+  ../simplicty failed on ../simplicty test/array/test-array-float.sct > ./test-output/test-array-float.ll
+test-array-varaccess...FAILED
+  ../simplicty failed on ../simplicty test/array/test-array-varaccess.sct > ./test-output/test-array-varaccess.ll
+test-array...FAILED
+  ../simplicty failed on ../simplicty test/array/test-array.sct > ./test-output/test-array.ll
+test-assign-helloworld...FAILED
+  ../simplicty failed on ../simplicty test/array/test-assign-helloworld.sct > ./test-output/test-assign-helloworld.ll
+test-char-array...FAILED
+  ../simplicty failed on ../simplicty test/array/test-char-array.sct > ./test-output/test-char-array.ll
+fail-*...FAILED
+  fail-*.err differs
+Testing Struct
+test-array-float...FAILED
+  ../simplicty failed on ../simplicty test/array/test-array-float.sct > ./test-output/test-array-float.ll
+test-array-varaccess...FAILED
+  ../simplicty failed on ../simplicty test/array/test-array-varaccess.sct > ./test-output/test-array-varaccess.ll
+test-array...FAILED
+  ../simplicty failed on ../simplicty test/array/test-array.sct > ./test-output/test-array.ll
+test-assign-helloworld...FAILED
+  ../simplicty failed on ../simplicty test/array/test-assign-helloworld.sct > ./test-output/test-assign-helloworld.ll
+test-char-array...FAILED
+  ../simplicty failed on ../simplicty test/array/test-char-array.sct > ./test-output/test-char-array.ll
+fail-*...FAILED
+  fail-*.err differs
+Testing Functions
+test-array-formal1...FAILED
+  ../simplicty failed on ../simplicty test/functions/test-array-formal1.sct > ./test-output/test-array-formal1.ll
+test-array-formal2...FAILED
+  ../simplicty failed on ../simplicty test/functions/test-array-formal2.sct > ./test-output/test-array-formal2.ll
+test-fib...FAILED
+  ../simplicty failed on ../simplicty test/functions/test-fib.sct > ./test-output/test-fib.ll
+test-fun10-float...OK
+test-fun9...FAILED
+  test-fun9.out differs
+test-func1...OK
+test-func2...FAILED
+  ../simplicty failed on ../simplicty test/functions/test-func2.sct > ./test-output/test-func2.ll
+test-func3...OK
+test-func4...OK
+test-func5...OK
+test-func6...OK
+test-func7...FAILED
+  ../simplicty failed on ../simplicty test/functions/test-func7.sct > ./test-output/test-func7.ll
+test-func8...OK
+test-gcd1...OK
+test-gcd2...OK
+fail-dead1...OK
+fail-dead2...OK
+fail-func1...OK
+fail-func2...OK
+fail-func3...OK
+fail-func4...OK
+fail-func5...OK
+fail-func6...OK
+fail-func7...OK
+fail-func8...OK
+fail-func9...OK
+fail-return1...OK
+fail-return2...OK
+Testing If
+test-if-else0...FAILED
+  test-if-else0.out differs
+test-if0...FAILED
+  test-if0.out differs
+test-if1...OK
+test-if2...OK
+test-if3...OK
+test-if4...OK
+test-if5...OK
+test-if6...OK
+test-if7...FAILED
+  test-if7.out differs
+fail-if1...OK
+fail-if2...OK
+fail-if3...OK
+Testing Operators
+fail-expr1...OK
+fail-expr2...OK
+Testing Assignments
+test-array-array-assign1...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-array-array-assign1.sct > ./test-output/test-array-array-assign1.ll
+test-decl-assign1...FAILED
+  test-decl-assign1.out differs
+test-decl-assign2...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-decl-assign2.sct > ./test-output/test-decl-assign2.ll
+test-float-array-assign0...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-float-array-assign0.sct > ./test-output/test-float-array-assign0.ll
+test-float-assign0...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-float-assign0.sct > ./test-output/test-float-assign0.ll
+test-float-assign1...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-float-assign1.sct > ./test-output/test-float-assign1.ll
+test-float1...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-float1.sct > ./test-output/test-float1.ll
+test-float2...FAILED
+  ../simplicty failed on ../simplicty test/assignment/test-float2.sct > ./test-output/test-float2.ll
+fail-assign1...OK
+fail-assign2...OK
+fail-assign3...OK

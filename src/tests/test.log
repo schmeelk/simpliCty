@@ -1,0 +1,714 @@
+
+###### Testing test-for-break
+../simplicty test/loops/test-for-break.sct > ./test-output/test-for-break.ll
+lli ./test-output/test-for-break.ll > ./test-output/test-for-break.out
+diff -b ./test-output/test-for-break.out test/loops/test-for-break.out > test-for-break.diff
+###### SUCCESS
+
+###### Testing test-for-break0
+../simplicty test/loops/test-for-break0.sct > ./test-output/test-for-break0.ll
+lli ./test-output/test-for-break0.ll > ./test-output/test-for-break0.out
+diff -b ./test-output/test-for-break0.out test/loops/test-for-break0.out > test-for-break0.diff
+###### SUCCESS
+
+###### Testing test-for-break1
+../simplicty test/loops/test-for-break1.sct > ./test-output/test-for-break1.ll
+lli ./test-output/test-for-break1.ll > ./test-output/test-for-break1.out
+diff -b ./test-output/test-for-break1.out test/loops/test-for-break1.out > test-for-break1.diff
+###### SUCCESS
+
+###### Testing test-for-break2
+../simplicty test/loops/test-for-break2.sct > ./test-output/test-for-break2.ll
+lli ./test-output/test-for-break2.ll > ./test-output/test-for-break2.out
+diff -b ./test-output/test-for-break2.out test/loops/test-for-break2.out > test-for-break2.diff
+###### SUCCESS
+
+###### Testing test-for-continue
+../simplicty test/loops/test-for-continue.sct > ./test-output/test-for-continue.ll
+lli ./test-output/test-for-continue.ll > ./test-output/test-for-continue.out
+diff -b ./test-output/test-for-continue.out test/loops/test-for-continue.out > test-for-continue.diff
+###### SUCCESS
+
+###### Testing test-for-continue0
+../simplicty test/loops/test-for-continue0.sct > ./test-output/test-for-continue0.ll
+lli ./test-output/test-for-continue0.ll > ./test-output/test-for-continue0.out
+diff -b ./test-output/test-for-continue0.out test/loops/test-for-continue0.out > test-for-continue0.diff
+###### SUCCESS
+
+###### Testing test-for-continue1
+../simplicty test/loops/test-for-continue1.sct > ./test-output/test-for-continue1.ll
+lli ./test-output/test-for-continue1.ll > ./test-output/test-for-continue1.out
+diff -b ./test-output/test-for-continue1.out test/loops/test-for-continue1.out > test-for-continue1.diff
+###### SUCCESS
+
+###### Testing test-for-for-break0
+../simplicty test/loops/test-for-for-break0.sct > ./test-output/test-for-for-break0.ll
+lli ./test-output/test-for-for-break0.ll > ./test-output/test-for-for-break0.out
+diff -b ./test-output/test-for-for-break0.out test/loops/test-for-for-break0.out > test-for-for-break0.diff
+###### SUCCESS
+
+###### Testing test-for-for-continue0
+../simplicty test/loops/test-for-for-continue0.sct > ./test-output/test-for-for-continue0.ll
+lli ./test-output/test-for-for-continue0.ll > ./test-output/test-for-for-continue0.out
+diff -b ./test-output/test-for-for-continue0.out test/loops/test-for-for-continue0.out > test-for-for-continue0.diff
+###### SUCCESS
+
+###### Testing test-for0
+../simplicty test/loops/test-for0.sct > ./test-output/test-for0.ll
+lli ./test-output/test-for0.ll > ./test-output/test-for0.out
+diff -b ./test-output/test-for0.out test/loops/test-for0.out > test-for0.diff
+###### SUCCESS
+
+###### Testing test-for1
+../simplicty test/loops/test-for1.sct > ./test-output/test-for1.ll
+lli ./test-output/test-for1.ll > ./test-output/test-for1.out
+diff -b ./test-output/test-for1.out test/loops/test-for1.out > test-for1.diff
+###### SUCCESS
+
+###### Testing test-for2
+../simplicty test/loops/test-for2.sct > ./test-output/test-for2.ll
+lli ./test-output/test-for2.ll > ./test-output/test-for2.out
+diff -b ./test-output/test-for2.out test/loops/test-for2.out > test-for2.diff
+###### SUCCESS
+
+###### Testing test-for3
+../simplicty test/loops/test-for3.sct > ./test-output/test-for3.ll
+lli ./test-output/test-for3.ll > ./test-output/test-for3.out
+diff -b ./test-output/test-for3.out test/loops/test-for3.out > test-for3.diff
+###### SUCCESS
+
+###### Testing test-for4
+../simplicty test/loops/test-for4.sct > ./test-output/test-for4.ll
+lli ./test-output/test-for4.ll > ./test-output/test-for4.out
+diff -b ./test-output/test-for4.out test/loops/test-for4.out > test-for4.diff
+###### SUCCESS
+
+###### Testing test-for5
+../simplicty test/loops/test-for5.sct > ./test-output/test-for5.ll
+lli ./test-output/test-for5.ll > ./test-output/test-for5.out
+diff -b ./test-output/test-for5.out test/loops/test-for5.out > test-for5.diff
+###### SUCCESS
+
+###### Testing test-for6
+../simplicty test/loops/test-for6.sct > ./test-output/test-for6.ll
+lli ./test-output/test-for6.ll > ./test-output/test-for6.out
+diff -b ./test-output/test-for6.out test/loops/test-for6.out > test-for6.diff
+###### SUCCESS
+
+###### Testing test-for7
+../simplicty test/loops/test-for7.sct > ./test-output/test-for7.ll
+lli ./test-output/test-for7.ll > ./test-output/test-for7.out
+diff -b ./test-output/test-for7.out test/loops/test-for7.out > test-for7.diff
+###### SUCCESS
+
+###### Testing test-while-break
+../simplicty test/loops/test-while-break.sct > ./test-output/test-while-break.ll
+lli ./test-output/test-while-break.ll > ./test-output/test-while-break.out
+diff -b ./test-output/test-while-break.out test/loops/test-while-break.out > test-while-break.diff
+###### SUCCESS
+
+###### Testing test-while-break0
+../simplicty test/loops/test-while-break0.sct > ./test-output/test-while-break0.ll
+lli ./test-output/test-while-break0.ll > ./test-output/test-while-break0.out
+diff -b ./test-output/test-while-break0.out test/loops/test-while-break0.out > test-while-break0.diff
+###### SUCCESS
+
+###### Testing test-while-break1
+../simplicty test/loops/test-while-break1.sct > ./test-output/test-while-break1.ll
+lli ./test-output/test-while-break1.ll > ./test-output/test-while-break1.out
+diff -b ./test-output/test-while-break1.out test/loops/test-while-break1.out > test-while-break1.diff
+###### SUCCESS
+
+###### Testing test-while-continue
+../simplicty test/loops/test-while-continue.sct > ./test-output/test-while-continue.ll
+lli ./test-output/test-while-continue.ll > ./test-output/test-while-continue.out
+diff -b ./test-output/test-while-continue.out test/loops/test-while-continue.out > test-while-continue.diff
+###### SUCCESS
+
+###### Testing test-while-while-break0
+../simplicty test/loops/test-while-while-break0.sct > ./test-output/test-while-while-break0.ll
+lli ./test-output/test-while-while-break0.ll > ./test-output/test-while-while-break0.out
+diff -b ./test-output/test-while-while-break0.out test/loops/test-while-while-break0.out > test-while-while-break0.diff
+###### SUCCESS
+
+###### Testing test-while-while-continue0
+../simplicty test/loops/test-while-while-continue0.sct > ./test-output/test-while-while-continue0.ll
+lli ./test-output/test-while-while-continue0.ll > ./test-output/test-while-while-continue0.out
+diff -b ./test-output/test-while-while-continue0.out test/loops/test-while-while-continue0.out > test-while-while-continue0.diff
+###### SUCCESS
+
+###### Testing test-while0
+../simplicty test/loops/test-while0.sct > ./test-output/test-while0.ll
+lli ./test-output/test-while0.ll > ./test-output/test-while0.out
+diff -b ./test-output/test-while0.out test/loops/test-while0.out > test-while0.diff
+###### SUCCESS
+
+###### Testing test-while1
+../simplicty test/loops/test-while1.sct > ./test-output/test-while1.ll
+lli ./test-output/test-while1.ll > ./test-output/test-while1.out
+diff -b ./test-output/test-while1.out test/loops/test-while1.out > test-while1.diff
+###### SUCCESS
+
+###### Testing test-while2
+../simplicty test/loops/test-while2.sct > ./test-output/test-while2.ll
+lli ./test-output/test-while2.ll > ./test-output/test-while2.out
+diff -b ./test-output/test-while2.out test/loops/test-while2.out > test-while2.diff
+###### SUCCESS
+
+###### Testing test-while3
+../simplicty test/loops/test-while3.sct > ./test-output/test-while3.ll
+lli ./test-output/test-while3.ll > ./test-output/test-while3.out
+diff -b ./test-output/test-while3.out test/loops/test-while3.out > test-while3.diff
+###### SUCCESS
+
+###### Testing fail-for1
+../simplicty fail/loops/fail-for1.sct 2> ./test-output/fail-for1.err >> test.log
+diff -b ./test-output/fail-for1.err fail/loops/fail-for1.err > fail-for1.diff
+###### SUCCESS
+
+###### Testing fail-for2
+../simplicty fail/loops/fail-for2.sct 2> ./test-output/fail-for2.err >> test.log
+diff -b ./test-output/fail-for2.err fail/loops/fail-for2.err > fail-for2.diff
+###### SUCCESS
+
+###### Testing fail-for3
+../simplicty fail/loops/fail-for3.sct 2> ./test-output/fail-for3.err >> test.log
+diff -b ./test-output/fail-for3.err fail/loops/fail-for3.err > fail-for3.diff
+###### SUCCESS
+
+###### Testing fail-for4
+../simplicty fail/loops/fail-for4.sct 2> ./test-output/fail-for4.err >> test.log
+diff -b ./test-output/fail-for4.err fail/loops/fail-for4.err > fail-for4.diff
+###### SUCCESS
+
+###### Testing fail-for5
+../simplicty fail/loops/fail-for5.sct 2> ./test-output/fail-for5.err >> test.log
+diff -b ./test-output/fail-for5.err fail/loops/fail-for5.err > fail-for5.diff
+###### SUCCESS
+
+###### Testing fail-while1
+../simplicty fail/loops/fail-while1.sct 2> ./test-output/fail-while1.err >> test.log
+diff -b ./test-output/fail-while1.err fail/loops/fail-while1.err > fail-while1.diff
+###### SUCCESS
+
+###### Testing fail-while2
+../simplicty fail/loops/fail-while2.sct 2> ./test-output/fail-while2.err >> test.log
+diff -b ./test-output/fail-while2.err fail/loops/fail-while2.err > fail-while2.diff
+###### SUCCESS
+/usr/local/bin/lli
+
+###### Testing test-char0
+../simplicty test/declaration/test-char0.sct > ./test-output/test-char0.ll
+lli ./test-output/test-char0.ll > ./test-output/test-char0.out
+diff -b ./test-output/test-char0.out test/declaration/test-char0.out > test-char0.diff
+###### SUCCESS
+
+###### Testing test-float-global
+../simplicty test/declaration/test-float-global.sct > ./test-output/test-float-global.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-float1
+../simplicty test/declaration/test-float1.sct > ./test-output/test-float1.ll
+lli ./test-output/test-float1.ll > ./test-output/test-float1.out
+diff -b ./test-output/test-float1.out test/declaration/test-float1.out > test-float1.diff
+###### SUCCESS
+
+###### Testing test-float2
+../simplicty test/declaration/test-float2.sct > ./test-output/test-float2.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-global1
+../simplicty test/declaration/test-global1.sct > ./test-output/test-global1.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-global2
+../simplicty test/declaration/test-global2.sct > ./test-output/test-global2.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-global3
+../simplicty test/declaration/test-global3.sct > ./test-output/test-global3.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-global4
+../simplicty test/declaration/test-global4.sct > ./test-output/test-global4.ll
+lli ./test-output/test-global4.ll > ./test-output/test-global4.out
+diff -b ./test-output/test-global4.out test/declaration/test-global4.out > test-global4.diff
+###### SUCCESS
+
+###### Testing test-local1
+../simplicty test/declaration/test-local1.sct > ./test-output/test-local1.ll
+lli ./test-output/test-local1.ll > ./test-output/test-local1.out
+diff -b ./test-output/test-local1.out test/declaration/test-local1.out > test-local1.diff
+###### SUCCESS
+
+###### Testing test-local2
+../simplicty test/declaration/test-local2.sct > ./test-output/test-local2.ll
+lli ./test-output/test-local2.ll > ./test-output/test-local2.out
+diff -b ./test-output/test-local2.out test/declaration/test-local2.out > test-local2.diff
+###### SUCCESS
+
+###### Testing test-var1
+../simplicty test/declaration/test-var1.sct > ./test-output/test-var1.ll
+lli ./test-output/test-var1.ll > ./test-output/test-var1.out
+diff -b ./test-output/test-var1.out test/declaration/test-var1.out > test-var1.diff
+###### SUCCESS
+
+###### Testing test-var2
+../simplicty test/declaration/test-var2.sct > ./test-output/test-var2.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing fail-*
+../simplicty fail/declaration/fail-*.sct 2> ./test-output/fail-*.err >> test.log
+diff -b ./test-output/fail-*.err fail/declaration/fail-global1.err > fail/declaration/fail-global2.err
+./regression-test.sh: 64: ./regression-test.sh: cannot create ./test-output/fail/declaration/fail-global2.err: Directory nonexistent
+FAILED fail-*.err differs from fail/declaration/fail-global1.err
+###### FAILED
+/usr/local/bin/lli
+
+###### Testing test-char
+../simplicty test/print/test-char.sct > ./test-output/test-char.ll
+lli ./test-output/test-char.ll > ./test-output/test-char.out
+diff -b ./test-output/test-char.out test/print/test-char.out > test-char.diff
+###### SUCCESS
+
+###### Testing test-char2
+../simplicty test/print/test-char2.sct > ./test-output/test-char2.ll
+lli ./test-output/test-char2.ll > ./test-output/test-char2.out
+diff -b ./test-output/test-char2.out test/print/test-char2.out > test-char2.diff
+###### SUCCESS
+
+###### Testing test-hello-world
+../simplicty test/print/test-hello-world.sct > ./test-output/test-hello-world.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-hello
+../simplicty test/print/test-hello.sct > ./test-output/test-hello.ll
+lli ./test-output/test-hello.ll > ./test-output/test-hello.out
+diff -b ./test-output/test-hello.out test/print/test-hello.out > test-hello.diff
+###### SUCCESS
+
+###### Testing test-print
+../simplicty test/print/test-print.sct > ./test-output/test-print.ll
+lli ./test-output/test-print.ll > ./test-output/test-print.out
+diff -b ./test-output/test-print.out test/print/test-print.out > test-print.diff
+###### SUCCESS
+
+###### Testing test-putchar
+../simplicty test/print/test-putchar.sct > ./test-output/test-putchar.ll
+lli ./test-output/test-putchar.ll > ./test-output/test-putchar.out
+diff -b ./test-output/test-putchar.out test/print/test-putchar.out > test-putchar.diff
+###### SUCCESS
+
+###### Testing fail-*
+../simplicty fail/print/fail-*.sct 2> ./test-output/fail-*.err >> test.log
+diff -b ./test-output/fail-*.err fail/print/fail-*.err > fail-*.diff
+FAILED fail-*.err differs from fail/print/fail-*.err
+###### FAILED
+/usr/local/bin/lli
+
+###### Testing test-char
+../simplicty test/print/test-char.sct > ./test-output/test-char.ll
+lli ./test-output/test-char.ll > ./test-output/test-char.out
+diff -b ./test-output/test-char.out test/print/test-char.out > test-char.diff
+###### SUCCESS
+
+###### Testing test-char2
+../simplicty test/print/test-char2.sct > ./test-output/test-char2.ll
+lli ./test-output/test-char2.ll > ./test-output/test-char2.out
+diff -b ./test-output/test-char2.out test/print/test-char2.out > test-char2.diff
+###### SUCCESS
+
+###### Testing test-hello-world
+../simplicty test/print/test-hello-world.sct > ./test-output/test-hello-world.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-hello
+../simplicty test/print/test-hello.sct > ./test-output/test-hello.ll
+lli ./test-output/test-hello.ll > ./test-output/test-hello.out
+diff -b ./test-output/test-hello.out test/print/test-hello.out > test-hello.diff
+###### SUCCESS
+
+###### Testing test-print
+../simplicty test/print/test-print.sct > ./test-output/test-print.ll
+lli ./test-output/test-print.ll > ./test-output/test-print.out
+diff -b ./test-output/test-print.out test/print/test-print.out > test-print.diff
+###### SUCCESS
+
+###### Testing test-putchar
+../simplicty test/print/test-putchar.sct > ./test-output/test-putchar.ll
+lli ./test-output/test-putchar.ll > ./test-output/test-putchar.out
+diff -b ./test-output/test-putchar.out test/print/test-putchar.out > test-putchar.diff
+###### SUCCESS
+
+###### Testing fail-*
+../simplicty fail/print/fail-*.sct 2> ./test-output/fail-*.err >> test.log
+diff -b ./test-output/fail-*.err fail/print/fail-*.err > fail-*.diff
+FAILED fail-*.err differs from fail/print/fail-*.err
+###### FAILED
+/usr/local/bin/lli
+
+###### Testing test-array-float
+../simplicty test/array/test-array-float.sct > ./test-output/test-array-float.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-array-varaccess
+../simplicty test/array/test-array-varaccess.sct > ./test-output/test-array-varaccess.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-array
+../simplicty test/array/test-array.sct > ./test-output/test-array.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-assign-helloworld
+../simplicty test/array/test-assign-helloworld.sct > ./test-output/test-assign-helloworld.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-char-array
+../simplicty test/array/test-char-array.sct > ./test-output/test-char-array.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing fail-*
+../simplicty fail/array/fail-*.sct 2> ./test-output/fail-*.err >> test.log
+diff -b ./test-output/fail-*.err fail/array/fail-*.err > fail-*.diff
+FAILED fail-*.err differs from fail/array/fail-*.err
+###### FAILED
+/usr/local/bin/lli
+
+###### Testing test-array-float
+../simplicty test/array/test-array-float.sct > ./test-output/test-array-float.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-array-varaccess
+../simplicty test/array/test-array-varaccess.sct > ./test-output/test-array-varaccess.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-array
+../simplicty test/array/test-array.sct > ./test-output/test-array.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-assign-helloworld
+../simplicty test/array/test-assign-helloworld.sct > ./test-output/test-assign-helloworld.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-char-array
+../simplicty test/array/test-char-array.sct > ./test-output/test-char-array.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing fail-*
+../simplicty fail/array/fail-*.sct 2> ./test-output/fail-*.err >> test.log
+diff -b ./test-output/fail-*.err fail/array/fail-*.err > fail-*.diff
+FAILED fail-*.err differs from fail/array/fail-*.err
+###### FAILED
+/usr/local/bin/lli
+
+###### Testing test-array-formal1
+../simplicty test/functions/test-array-formal1.sct > ./test-output/test-array-formal1.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-array-formal2
+../simplicty test/functions/test-array-formal2.sct > ./test-output/test-array-formal2.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-fib
+../simplicty test/functions/test-fib.sct > ./test-output/test-fib.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-fun10-float
+../simplicty test/functions/test-fun10-float.sct > ./test-output/test-fun10-float.ll
+lli ./test-output/test-fun10-float.ll > ./test-output/test-fun10-float.out
+diff -b ./test-output/test-fun10-float.out test/functions/test-fun10-float.out > test-fun10-float.diff
+###### SUCCESS
+
+###### Testing test-fun9
+../simplicty test/functions/test-fun9.sct > ./test-output/test-fun9.ll
+lli ./test-output/test-fun9.ll > ./test-output/test-fun9.out
+diff -b ./test-output/test-fun9.out test/functions/test-fun9.out > test-fun9.diff
+FAILED test-fun9.out differs from test/functions/test-fun9.out
+###### FAILED
+
+###### Testing test-func1
+../simplicty test/functions/test-func1.sct > ./test-output/test-func1.ll
+lli ./test-output/test-func1.ll > ./test-output/test-func1.out
+diff -b ./test-output/test-func1.out test/functions/test-func1.out > test-func1.diff
+###### SUCCESS
+
+###### Testing test-func2
+../simplicty test/functions/test-func2.sct > ./test-output/test-func2.ll
+Fatal error: exception Failure("int_of_string")
+###### FAILED
+
+###### Testing test-func3
+../simplicty test/functions/test-func3.sct > ./test-output/test-func3.ll
+lli ./test-output/test-func3.ll > ./test-output/test-func3.out
+diff -b ./test-output/test-func3.out test/functions/test-func3.out > test-func3.diff
+###### SUCCESS
+
+###### Testing test-func4
+../simplicty test/functions/test-func4.sct > ./test-output/test-func4.ll
+lli ./test-output/test-func4.ll > ./test-output/test-func4.out
+diff -b ./test-output/test-func4.out test/functions/test-func4.out > test-func4.diff
+###### SUCCESS
+
+###### Testing test-func5
+../simplicty test/functions/test-func5.sct > ./test-output/test-func5.ll
+lli ./test-output/test-func5.ll > ./test-output/test-func5.out
+diff -b ./test-output/test-func5.out test/functions/test-func5.out > test-func5.diff
+###### SUCCESS
+
+###### Testing test-func6
+../simplicty test/functions/test-func6.sct > ./test-output/test-func6.ll
+lli ./test-output/test-func6.ll > ./test-output/test-func6.out
+diff -b ./test-output/test-func6.out test/functions/test-func6.out > test-func6.diff
+###### SUCCESS
+
+###### Testing test-func7
+../simplicty test/functions/test-func7.sct > ./test-output/test-func7.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-func8
+../simplicty test/functions/test-func8.sct > ./test-output/test-func8.ll
+lli ./test-output/test-func8.ll > ./test-output/test-func8.out
+diff -b ./test-output/test-func8.out test/functions/test-func8.out > test-func8.diff
+###### SUCCESS
+
+###### Testing test-gcd1
+../simplicty test/functions/test-gcd1.sct > ./test-output/test-gcd1.ll
+lli ./test-output/test-gcd1.ll > ./test-output/test-gcd1.out
+diff -b ./test-output/test-gcd1.out test/functions/test-gcd1.out > test-gcd1.diff
+###### SUCCESS
+
+###### Testing test-gcd2
+../simplicty test/functions/test-gcd2.sct > ./test-output/test-gcd2.ll
+lli ./test-output/test-gcd2.ll > ./test-output/test-gcd2.out
+diff -b ./test-output/test-gcd2.out test/functions/test-gcd2.out > test-gcd2.diff
+###### SUCCESS
+
+###### Testing fail-dead1
+../simplicty fail/functions/fail-dead1.sct 2> ./test-output/fail-dead1.err >> test.log
+diff -b ./test-output/fail-dead1.err fail/functions/fail-dead1.err > fail-dead1.diff
+###### SUCCESS
+
+###### Testing fail-dead2
+../simplicty fail/functions/fail-dead2.sct 2> ./test-output/fail-dead2.err >> test.log
+diff -b ./test-output/fail-dead2.err fail/functions/fail-dead2.err > fail-dead2.diff
+###### SUCCESS
+
+###### Testing fail-func1
+../simplicty fail/functions/fail-func1.sct 2> ./test-output/fail-func1.err >> test.log
+diff -b ./test-output/fail-func1.err fail/functions/fail-func1.err > fail-func1.diff
+###### SUCCESS
+
+###### Testing fail-func2
+../simplicty fail/functions/fail-func2.sct 2> ./test-output/fail-func2.err >> test.log
+diff -b ./test-output/fail-func2.err fail/functions/fail-func2.err > fail-func2.diff
+###### SUCCESS
+
+###### Testing fail-func3
+../simplicty fail/functions/fail-func3.sct 2> ./test-output/fail-func3.err >> test.log
+diff -b ./test-output/fail-func3.err fail/functions/fail-func3.err > fail-func3.diff
+###### SUCCESS
+
+###### Testing fail-func4
+../simplicty fail/functions/fail-func4.sct 2> ./test-output/fail-func4.err >> test.log
+diff -b ./test-output/fail-func4.err fail/functions/fail-func4.err > fail-func4.diff
+###### SUCCESS
+
+###### Testing fail-func5
+../simplicty fail/functions/fail-func5.sct 2> ./test-output/fail-func5.err >> test.log
+diff -b ./test-output/fail-func5.err fail/functions/fail-func5.err > fail-func5.diff
+###### SUCCESS
+
+###### Testing fail-func6
+../simplicty fail/functions/fail-func6.sct 2> ./test-output/fail-func6.err >> test.log
+diff -b ./test-output/fail-func6.err fail/functions/fail-func6.err > fail-func6.diff
+###### SUCCESS
+
+###### Testing fail-func7
+../simplicty fail/functions/fail-func7.sct 2> ./test-output/fail-func7.err >> test.log
+diff -b ./test-output/fail-func7.err fail/functions/fail-func7.err > fail-func7.diff
+###### SUCCESS
+
+###### Testing fail-func8
+../simplicty fail/functions/fail-func8.sct 2> ./test-output/fail-func8.err >> test.log
+diff -b ./test-output/fail-func8.err fail/functions/fail-func8.err > fail-func8.diff
+###### SUCCESS
+
+###### Testing fail-func9
+../simplicty fail/functions/fail-func9.sct 2> ./test-output/fail-func9.err >> test.log
+diff -b ./test-output/fail-func9.err fail/functions/fail-func9.err > fail-func9.diff
+###### SUCCESS
+
+###### Testing fail-return1
+../simplicty fail/functions/fail-return1.sct 2> ./test-output/fail-return1.err >> test.log
+diff -b ./test-output/fail-return1.err fail/functions/fail-return1.err > fail-return1.diff
+###### SUCCESS
+
+###### Testing fail-return2
+../simplicty fail/functions/fail-return2.sct 2> ./test-output/fail-return2.err >> test.log
+diff -b ./test-output/fail-return2.err fail/functions/fail-return2.err > fail-return2.diff
+###### SUCCESS
+/usr/local/bin/lli
+
+###### Testing test-if-else0
+../simplicty test/if/test-if-else0.sct > ./test-output/test-if-else0.ll
+lli ./test-output/test-if-else0.ll > ./test-output/test-if-else0.out
+diff -b ./test-output/test-if-else0.out test/if/test-if-else0.out > test-if-else0.diff
+FAILED test-if-else0.out differs from test/if/test-if-else0.out
+###### FAILED
+
+###### Testing test-if0
+../simplicty test/if/test-if0.sct > ./test-output/test-if0.ll
+lli ./test-output/test-if0.ll > ./test-output/test-if0.out
+diff -b ./test-output/test-if0.out test/if/test-if0.out > test-if0.diff
+FAILED test-if0.out differs from test/if/test-if0.out
+###### FAILED
+
+###### Testing test-if1
+../simplicty test/if/test-if1.sct > ./test-output/test-if1.ll
+lli ./test-output/test-if1.ll > ./test-output/test-if1.out
+diff -b ./test-output/test-if1.out test/if/test-if1.out > test-if1.diff
+###### SUCCESS
+
+###### Testing test-if2
+../simplicty test/if/test-if2.sct > ./test-output/test-if2.ll
+lli ./test-output/test-if2.ll > ./test-output/test-if2.out
+diff -b ./test-output/test-if2.out test/if/test-if2.out > test-if2.diff
+###### SUCCESS
+
+###### Testing test-if3
+../simplicty test/if/test-if3.sct > ./test-output/test-if3.ll
+lli ./test-output/test-if3.ll > ./test-output/test-if3.out
+diff -b ./test-output/test-if3.out test/if/test-if3.out > test-if3.diff
+###### SUCCESS
+
+###### Testing test-if4
+../simplicty test/if/test-if4.sct > ./test-output/test-if4.ll
+lli ./test-output/test-if4.ll > ./test-output/test-if4.out
+diff -b ./test-output/test-if4.out test/if/test-if4.out > test-if4.diff
+###### SUCCESS
+
+###### Testing test-if5
+../simplicty test/if/test-if5.sct > ./test-output/test-if5.ll
+lli ./test-output/test-if5.ll > ./test-output/test-if5.out
+diff -b ./test-output/test-if5.out test/if/test-if5.out > test-if5.diff
+###### SUCCESS
+
+###### Testing test-if6
+../simplicty test/if/test-if6.sct > ./test-output/test-if6.ll
+lli ./test-output/test-if6.ll > ./test-output/test-if6.out
+diff -b ./test-output/test-if6.out test/if/test-if6.out > test-if6.diff
+###### SUCCESS
+
+###### Testing test-if7
+../simplicty test/if/test-if7.sct > ./test-output/test-if7.ll
+lli ./test-output/test-if7.ll > ./test-output/test-if7.out
+diff -b ./test-output/test-if7.out test/if/test-if7.out > test-if7.diff
+FAILED test-if7.out differs from test/if/test-if7.out
+###### FAILED
+
+###### Testing fail-if1
+../simplicty fail/if/fail-if1.sct 2> ./test-output/fail-if1.err >> test.log
+diff -b ./test-output/fail-if1.err fail/if/fail-if1.err > fail-if1.diff
+###### SUCCESS
+
+###### Testing fail-if2
+../simplicty fail/if/fail-if2.sct 2> ./test-output/fail-if2.err >> test.log
+diff -b ./test-output/fail-if2.err fail/if/fail-if2.err > fail-if2.diff
+###### SUCCESS
+
+###### Testing fail-if3
+../simplicty fail/if/fail-if3.sct 2> ./test-output/fail-if3.err >> test.log
+diff -b ./test-output/fail-if3.err fail/if/fail-if3.err > fail-if3.diff
+###### SUCCESS
+/usr/local/bin/lli
+
+###### Testing fail-expr1
+../simplicty fail/operators/fail-expr1.sct 2> ./test-output/fail-expr1.err >> test.log
+diff -b ./test-output/fail-expr1.err fail/operators/fail-expr1.err > fail-expr1.diff
+###### SUCCESS
+
+###### Testing fail-expr2
+../simplicty fail/operators/fail-expr2.sct 2> ./test-output/fail-expr2.err >> test.log
+diff -b ./test-output/fail-expr2.err fail/operators/fail-expr2.err > fail-expr2.diff
+###### SUCCESS
+/usr/local/bin/lli
+
+###### Testing test-array-array-assign1
+../simplicty test/assignment/test-array-array-assign1.sct > ./test-output/test-array-array-assign1.ll
+Segmentation fault (core dumped)
+###### FAILED
+
+###### Testing test-decl-assign1
+../simplicty test/assignment/test-decl-assign1.sct > ./test-output/test-decl-assign1.ll
+lli ./test-output/test-decl-assign1.ll > ./test-output/test-decl-assign1.out
+diff -b ./test-output/test-decl-assign1.out test/assignment/test-decl-assign1.out > test-decl-assign1.diff
+FAILED test-decl-assign1.out differs from test/assignment/test-decl-assign1.out
+###### FAILED
+
+###### Testing test-decl-assign2
+../simplicty test/assignment/test-decl-assign2.sct > ./test-output/test-decl-assign2.ll
+Fatal error: exception Not_found
+###### FAILED
+
+###### Testing test-float-array-assign0
+../simplicty test/assignment/test-float-array-assign0.sct > ./test-output/test-float-array-assign0.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-float-assign0
+../simplicty test/assignment/test-float-assign0.sct > ./test-output/test-float-assign0.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-float-assign1
+../simplicty test/assignment/test-float-assign1.sct > ./test-output/test-float-assign1.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing test-float1
+../simplicty test/assignment/test-float1.sct > ./test-output/test-float1.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-float2
+../simplicty test/assignment/test-float2.sct > ./test-output/test-float2.ll
+Fatal error: exception Failure("hd")
+###### FAILED
+
+###### Testing fail-assign1
+../simplicty fail/assignment/fail-assign1.sct 2> ./test-output/fail-assign1.err >> test.log
+diff -b ./test-output/fail-assign1.err fail/assignment/fail-assign1.err > fail-assign1.diff
+###### SUCCESS
+
+###### Testing fail-assign2
+../simplicty fail/assignment/fail-assign2.sct 2> ./test-output/fail-assign2.err >> test.log
+diff -b ./test-output/fail-assign2.err fail/assignment/fail-assign2.err > fail-assign2.diff
+###### SUCCESS
+
+###### Testing fail-assign3
+../simplicty fail/assignment/fail-assign3.sct 2> ./test-output/fail-assign3.err >> test.log
+diff -b ./test-output/fail-assign3.err fail/assignment/fail-assign3.err > fail-assign3.diff
+###### SUCCESS
+/usr/local/bin/lli

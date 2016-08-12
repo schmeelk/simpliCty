@@ -6,7 +6,7 @@ int add(int a, int b)
 int main()
 {
   int a;
-  a = add(39, 3);
-  print(a);
+  a = add(30, 35);
+  putchar(a);
   return 0;
 }

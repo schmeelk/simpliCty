@@ -37,12 +37,13 @@ let translate (globals, externs, functions) =
     | A.Float -> f32_t
     | A.Char  -> i32_t
     | A.Bool  -> i1_t
+    | A.String -> i32_t
     | A.Void  -> void_t
   in
   let primary_decompose = function 
       A.IntLit(i)   -> i 
     | A.BoolLit(b)  -> if b then 1 else 0
-    | A.FloatLit(f) -> int_of_float f 
+    | A.FloatLit(f) -> int_of_float f
     | _             -> 0
 
   and primary_float_decompose = function
@@ -56,19 +57,19 @@ let translate (globals, externs, functions) =
   (* Store memory *) 
   let store_primitive addr typ' value builder =
     L.build_store (L.const_int typ' (if List.length value <> 0 then primary_decompose (List.hd value)
-    else 0)
+    else primary_decompose (A.IntLit(0)))
     ) addr builder
   and store_array_idx addr index typ' value builder =
     let i  = [|L.const_int i32_t index|]
     and v' = L.const_int typ' (if List.length value <> 0 then primary_decompose (List.hd value)
-    else 0)
+    else 1)
     in
     let addr' = L.build_in_bounds_gep addr i "storeArrIdx" builder in
     L.build_store v' addr' builder
   and store_float_primitive addr typ' value builder =
     L.build_store (L.const_float typ' (if List.length value <> 0
       then primary_float_decompose (List.hd value)
-     else 0.0)
+     else -0.0)
     ) addr builder
   and copy_array size old_addr new_addr builder =
     let rec copy_idx idx =(match idx with

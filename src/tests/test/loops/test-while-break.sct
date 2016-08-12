@@ -6,5 +6,6 @@ int main()
     i = i - 1;
     break;
   }
+  putchar(65);
   return 0;
 }
