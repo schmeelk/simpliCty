@@ -8,5 +8,6 @@ int main()
   float f;
   f = 33.333;
   foo(f);
+  putchar(65);
   return 0;
 }

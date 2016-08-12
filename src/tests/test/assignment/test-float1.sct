@@ -5,7 +5,6 @@ int main( ) {
 
    int i;
    i = 999;
-
+   putchar(65);
    return 0;
 }
-

@@ -201,7 +201,7 @@ TestPrint(){
 
 TestScan(){
     echo "Testing Scan"
-    files="test/scan/test-*.sct fail/scan/fail-*.sct"
+    #files="test/scan/test-*.sct fail/scan/fail-*.sct"
     Test
 }
 
@@ -213,7 +213,7 @@ TestArray(){
 
 TestStruct(){
     echo "Testing Struct"
-    files="test/struct/test-*.sct fail/struct/fail-*.sct"
+    #files="test/struct/test-*.sct fail/struct/fail-*.sct"
     Test
 }
 
@@ -231,7 +231,8 @@ TestIf(){
 
 TestOp(){
     echo "Testing Operators"
-    files="test/operators/test-*.sct fail/operators/fail-*.sct"
+    #files="test/operators/test-*.sct fail/operators/fail-*.sct"
+    files="fail/operators/fail-*.sct"
     Test
 }
 
