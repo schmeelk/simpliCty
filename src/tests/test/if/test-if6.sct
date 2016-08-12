@@ -4,10 +4,11 @@ int main()
  int y;
  x = 0;
  if (x == 0){
-   y = 10;
+   y = 65;
  }
  else{
-   y = 100;
+   y = 66;
  }
+ putchar(y);
  return 0;
 }

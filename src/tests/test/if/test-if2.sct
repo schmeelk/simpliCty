@@ -1,6 +1,6 @@
 int main()
 {
-  if (true) print(42); else print(8);
-  print(17);
+  if (true) putchar(65); else putchar(66);
+  putchar(67);
   return 0;
 }

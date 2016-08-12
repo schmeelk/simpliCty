@@ -2,11 +2,12 @@ int main()
 {
   int x;
   int y;
-  x = 0;
-  y = 10;
+  x = 65;
+  y = 66;
   if (x < y) 
   {
-     x = 100;
+     x = 69;
+     putchar(x);
   }
   return 0;
 }

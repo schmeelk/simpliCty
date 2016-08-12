@@ -7,14 +7,16 @@ int main()
  z = 5;
  if (x == 0){
    if (z == 5){
-     y = 10;
+     y = 70;
+     putchar(y);
    }
    else{
-     y = 99;
+     y = 75;
    }
  }
  else{
-   y = 100;
+   y = 70;
  }
+ putchar(y);
  return 0;
 }

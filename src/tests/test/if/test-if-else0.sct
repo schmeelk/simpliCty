@@ -1,13 +1,14 @@
 int main()
 {
-  int x = 0;
-  int y = 10;
+  int x = 65;
+  int y = 66;
   if (x < y) 
   {
-     x = 100;
+     x = 67;
   }
   else{
-     x = -1;
+     x = 68;
   }
+  putchar(x);
   return 0;
 }
